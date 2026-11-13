@@ -21,6 +21,4 @@ Usa Node.js 22 o posterior. Exporta las dos variables en tu entorno y ejecuta `n
 
 ## Compras de láminas
 
-Configura STRIPE_SECRET_KEY en las variables privadas de Render. Usa la clave de producción de tu cuenta de Stripe para aceptar pagos reales o su clave de pruebas para validar el recorrido. Render proporciona RENDER_EXTERNAL_URL para el retorno del pago. Puedes definir PUBLIC_URL si utilizas un dominio propio. MEMBER_SECRET permite usar una clave estable para la cookie de membresía, independiente de la clave de correo.
-
-Los precios se calculan en el servidor. El pago único se autoriza en Stripe Checkout y la página de regreso verifica su estado antes de entregar los archivos PNG. El enlace de confirmación es privado y permite recuperar las descargas. El club no factura cuotas automáticamente.
+El checkout requiere una membresía activa, utiliza la Visa de demostración terminada en 4242 y confirma el pedido sin procesar cargos. El servidor calcula el total y firma un enlace para descargar las obras seleccionadas. Define MEMBER_SECRET como secreto estable en Render para conservar las confirmaciones cuando cambies la clave del servicio de correo.

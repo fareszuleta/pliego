@@ -54,7 +54,7 @@ http.createServer(async (req, res) => {
       const response = await fetch('https://api.resend.com/emails', {
         method:'POST', signal:AbortSignal.timeout(12000),
         headers:{Authorization:'Bearer '+RESEND_API_KEY, 'Content-Type':'application/json','Idempotency-Key':'pliego-'+day+'-'+hash},
-        body:JSON.stringify({from:EMAIL_FROM,to:[recipient],subject:'Tu suscripción de prueba a Club Pliego',text:'Has activado tu suscripción de prueba a Club Pliego. El primer mes es gratis. La membresía no genera cargos. Las láminas se compran por separado y cada pago requiere tu autorización. Para cancelar en este dispositivo, entra en Club Pliego y elige Cancelar membresía. Si no solicitaste esta prueba, puedes ignorar este mensaje.'})
+        body:JSON.stringify({from:EMAIL_FROM,to:[recipient],subject:'Tu suscripción de prueba a Club Pliego',text:'Has activado tu suscripción de prueba a Club Pliego. El primer mes es gratis. La membresía no genera cargos. Ya puedes confirmar tus pedidos usando la tarjeta predeterminada de la tienda. Para cancelar en este dispositivo, entra en Club Pliego y elige Cancelar membresía. Si no solicitaste esta prueba, puedes ignorar este mensaje.'})
       });
       if (response.ok && (await response.json()).id) { setMember(res,recipient); return reply(res,200,'Confirmación enviada.'); }
     } catch {}
