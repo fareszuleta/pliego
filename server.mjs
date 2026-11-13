@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 
 const html = await readFile(new URL('./public/index.html', import.meta.url));
+const terms = await readFile(new URL('./public/terminos.html', import.meta.url));
 const attempts = new Map();
 const hour = 3600000;
 setInterval(() => {
@@ -17,9 +18,10 @@ function reply(res, status, message) {
 }
 
 http.createServer(async (req, res) => {
-  if (req.method === 'GET' && req.url === '/') {
+  const path = req.url.split('?')[0];
+  if (req.method === 'GET' && ['/', '/terminos', '/terminos/'].includes(path)) {
     res.writeHead(200, {'Content-Type':'text/html; charset=utf-8'});
-    return res.end(html);
+    return res.end(path === '/' ? html : terms);
   }
   if (req.method !== 'POST' || req.url !== '/api/activar') return reply(res,404,'Ruta desconocida.');
   if (req.headers['content-type'] !== 'application/json') return reply(res,415,'Formato incorrecto.');
