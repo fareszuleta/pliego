@@ -1,4 +1,4 @@
-import {createHmac, timingSafeEqual} from 'node:crypto';
+import {createHmac, timingSafeEqual, createCipheriv, createDecipheriv, randomBytes} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 
 const catalog = [
@@ -37,6 +37,24 @@ function readOrder(token) {
   if (!timingSafeEqual(Buffer.from(mac), Buffer.from(expected))) return null;
   return JSON.parse(Buffer.from(data, 'base64url').toString());
 }
+function customerKey() {
+  return Buffer.from(signature('customer', 'receipt-key'), 'base64url');
+}
+
+function sealCustomer(name, email) {
+  const iv = randomBytes(12);
+  const cipher = createCipheriv('aes-256-gcm', customerKey(), iv);
+  const encrypted = Buffer.concat([cipher.update(JSON.stringify({name, email}), 'utf8'), cipher.final()]);
+  return Buffer.concat([iv, cipher.getAuthTag(), encrypted]).toString('base64url');
+}
+
+function openCustomer(value) {
+  const bytes = Buffer.from(value, 'base64url');
+  const cipher = createDecipheriv('aes-256-gcm', customerKey(), bytes.subarray(0, 12));
+  cipher.setAuthTag(bytes.subarray(12, 28));
+  return JSON.parse(Buffer.concat([cipher.update(bytes.subarray(28)), cipher.final()]).toString());
+}
+
 export async function purchases(req,res,url) {
   try {
     const member=membership(req);
@@ -59,7 +77,7 @@ export async function purchases(req,res,url) {
       if(typeof name!=='string' || !name.trim() || name.length>100 || email!==member || !Array.isArray(items) || !items.length || items.length>99 || !items.every(i=>Number.isInteger(i)&&catalog[i]) || !/^[a-f0-9-]{36}$/.test(attempt)) return json(res,400,{message:'Check your name, membership email and bag (up to 99 items).'});
       const ids = [...new Set(items)];
       const total = items.reduce((sum, id) => sum + catalog[id].price, 0) / 100;
-      const dataToken = Buffer.from(JSON.stringify({attempt, ids, total})).toString('base64url');
+      const dataToken = Buffer.from(JSON.stringify({attempt, ids, total, quantities:ids.map(id => items.filter(item => item === id).length), customer:sealCustomer(name.trim(), member)})).toString('base64url');
       const id = dataToken + '.' + signature(dataToken, 'order');
       return json(res, 200, {id, url:'/?pedido='+id});
 
@@ -69,7 +87,10 @@ export async function purchases(req,res,url) {
       const order = readOrder(id);
       if (!order) return json(res,404,{message:'Order not found.'});
       const {ids,total} = order;
-      if(url.pathname==='/api/pedido') return json(res,200,{ids,total});
+      if (url.pathname === '/api/pedido') {
+        const buyer = order.customer && member ? openCustomer(order.customer) : null;
+        return json(res, 200, {ids, total, quantities:order.quantities, reference:order.attempt, buyer:buyer?.email === member ? buyer : null});
+      }
       const file=url.searchParams.get('obra');
       if (!ids.some(i=>catalog[i]?.file===file)) return json(res,403,{message:'This print is not part of your order.'});
       const png=await readFile(new URL('./laminas/'+file+'.png',import.meta.url));

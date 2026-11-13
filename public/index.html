@@ -24,7 +24,7 @@ async function checkout(){
       show('<h2>Shop with Club Pliego</h2><p>Join the club to check out. Your items will stay in your bag.</p><button class="dark" onclick="club()">Join the club</button>');
       return;
     }
-    show('<h2>Checkout</h2><form onsubmit="event.preventDefault();pay(this)"><label>Name<input name="name" autocomplete="name" required maxlength="100"></label><label>Membership email<input name="email" type="email" readonly></label><p>Digital prints · Download your PNG files after checkout.</p>'+defaultCard+'<p>Total: $'+total()+' MXN</p><button class="dark">Confirm order</button><p role="status"></p></form>');
+    show('<h2>Checkout</h2><form onsubmit="event.preventDefault();pay(this)"><label>Name<input name="name" autocomplete="name" required maxlength="100"></label><label>Membership email<input name="email" type="email" readonly></label><p>Digital prints · Download your PNG files after checkout.</p>'+defaultCard+'<p>Total: $'+total()+' MXN</p><button class="dark">Place order</button><p role="status"></p></form>');
     panel.querySelector('[name=email]').value=state.email;
   } catch {show('<p>Checkout could not be opened. Return to your bag and try again.</p>')}
 }
@@ -54,8 +54,14 @@ async function order(id){
       for(const item of JSON.parse(saved)){const pos=items.indexOf(item);if(pos>=0)items.splice(pos,1)}
       sync();sessionStorage.removeItem(id);delete sessionStorage.purchase;
     }
-    const links=result.ids.map(i=>'<p><a href="/api/descarga?id='+encodeURIComponent(id)+'&obra='+['orbita','ritmo','sol'][i]+'">Download '+names[i]+' (PNG)</a></p>').join('');
-    show('<h2>Order confirmed</h2><p>Order total: $'+result.total+' MXN · Visa •••• 4242</p>'+links+'<small>Bookmark this page to download your prints again.</small>');
+    const links=result.ids.map((i,index)=>'<p><a href="/api/descarga?id='+encodeURIComponent(id)+'&obra='+['orbita','ritmo','sol'][i]+'">Download '+names[i]+' (PNG)</a>'+ (result.quantities ? ' · Qty '+result.quantities[index] : '') +'</p>').join('');
+    show('<h2>Order confirmed</h2><p id="order-reference"></p><p id="order-buyer" hidden></p><p>Order total: $'+result.total+' MXN · Visa •••• 4242</p>'+links+'<small>Bookmark this page to download your prints again.</small>');
+    panel.querySelector('#order-reference').textContent='Order '+result.reference;
+    if(result.buyer){
+      const buyer=panel.querySelector('#order-buyer');
+      buyer.hidden=false;
+      buyer.textContent=result.buyer.name+' · '+result.buyer.email;
+    }
   } catch {panel.textContent='We could not retrieve your order. Reload this page to try again.'}
 }
 const query=new URLSearchParams(location.search);
