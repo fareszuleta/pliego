@@ -41,7 +41,7 @@ http.createServer(async (req, res) => {
     if (!RESEND_API_KEY || !EMAIL_FROM) return reply(res,503,'Email delivery has not been set up yet.');
     const recipient = email.trim();
     const day = new Date().toISOString().slice(0,10);
-    const hash = createHash('sha256').update(recipient.toLowerCase()).digest('hex');
+    const sender = EMAIL_FROM.trim();
     const ip = String(req.headers['x-forwarded-for'] || req.socket.remoteAddress).split(',').at(-1).trim();
     let limit = attempts.get(ip);
     if (!limit || limit.until <= Date.now()) {
@@ -51,14 +51,34 @@ http.createServer(async (req, res) => {
     if (limit.count >= 12) return reply(res,429,'Too many attempts. Please try again later.');
     limit.count++;
     try {
+      const payload = JSON.stringify({from:sender,to:[recipient],subject:'Your Club Pliego trial membership',text:'Your Club Pliego trial membership is active. Your first month is free. Membership carries no charge. You can now confirm orders using the default card in the store. To cancel on this device, open Club Pliego and select Cancel membership. If you did not request this trial, you can disregard this email.'});
+      const hash = createHash('sha256').update(payload).digest('hex');
       const response = await fetch('https://api.resend.com/emails', {
         method:'POST', signal:AbortSignal.timeout(12000),
-        headers:{Authorization:'Bearer '+RESEND_API_KEY, 'Content-Type':'application/json','Idempotency-Key':'pliego-'+day+'-'+hash},
-        body:JSON.stringify({from:EMAIL_FROM,to:[recipient],subject:'Your Club Pliego trial membership',text:'Your Club Pliego trial membership is active. Your first month is free. Membership carries no charge. You can now confirm orders using the default card in the store. To cancel on this device, open Club Pliego and select Cancel membership. If you did not request this trial, you can disregard this email.'})
+        headers:{Authorization:'Bearer '+RESEND_API_KEY.trim(), 'Content-Type':'application/json','Idempotency-Key':'pliego-'+day+'-'+hash},
+        body:payload
       });
-      if (response.ok && (await response.json()).id) { setMember(res,recipient); return reply(res,200,'Confirmation email sent.'); }
-    } catch {}
-    return reply(res,502,'We could not confirm that your email was sent. Please try again.');
+      const result = await response.json();
+      if (response.ok && result.id) {
+        setMember(res,recipient);
+        return reply(res,200,'Confirmation email sent.');
+      }
+      const code = String(result.name || 'unknown').replace(/[^a-z0-9_]/gi,'').slice(0,64);
+      console.error('Resend activation rejected', response.status, code);
+      const detail = String(result.message || '');
+      if (/verify a domain|domain is not verified|domain.*not.*verified/i.test(detail) && !/testing emails/i.test(detail))
+        return reply(res,503,'Email delivery is unavailable because the store sender domain is not verified.');
+      if (/testing emails|your own email address/i.test(detail))
+        return reply(res,403,'The store is using a test sender. It can only send to the email address registered with Resend.');
+      if (/api.key|unauthorized/i.test(code) || response.status === 401)
+        return reply(res,503,'The email service could not authenticate the store.');
+      if (response.status === 429)
+        return reply(res,429,'The email service has reached its sending limit. Please try again later.');
+      return reply(res,502,'The email provider rejected the request ('+response.status+', '+code+').');
+    } catch (error) {
+      console.error('Email activation unavailable',error.name);
+      return reply(res,502,'The store could not confirm a response from the email service. Please try again.');
+    }
   } catch {
     return reply(res,400,'Invalid request.');
   }
