@@ -4,6 +4,7 @@
 .payment-method{display:flex;align-items:center;gap:14px;border:1px solid #c6c5b8;border-radius:12px;padding:14px 16px;margin:18px 0}.payment-method .card-brand{font:italic 700 16px Arial,sans-serif;color:#203475;background:#fff;border:1px solid #d3d3ca;border-radius:5px;padding:8px}.payment-method small{display:block;margin-top:4px}
 form input{display:block;width:100%;font:inherit;padding:12px;margin:6px 0 16px} </style><header><strong>Pliego.</strong><nav><a href="#coleccion">Collection</a><button onclick="club()">Club Pliego</button><button id="bag" onclick="cart()">Bag (0)</button></nav></header><main><section class="hero"><small>CLUB PLIEGO</small><h1>The art of<br>collecting.</h1><p>Enjoy your first month of access to the club’s digital prints for free.</p><button class="dark" onclick="club()">Explore membership ↗</button></section><h2 id="coleccion">Print collection</h2><div id="grid" class="grid"></div></main><footer><span>Pliego Editions · Digital prints</span><a href="/terminos">Terms and conditions</a></footer><dialog id="d"><button class="close" onclick="d.close()" aria-label="Close">×</button><div id="panel"></div></dialog><script>
 const names=['Terracotta Orbit','Cobalt Rhythm','Clay Sun'],prices=[180,210,190];let items=JSON.parse(localStorage.items||'[]');
+const defaultCard = '<div class="payment-method"><strong class="card-brand">VISA</strong><div>Visa •••• 4242<small>Default card</small></div></div>';
 function show(s){panel.innerHTML=s;if(!d.open)d.showModal()}
 function sync(){localStorage.items=JSON.stringify(items);bag.textContent='Bag ('+items.length+')'}
 grid.innerHTML=names.map((n,i)=>'<article><div class="print"><div class="poster p'+i+'"></div></div><div class="row"><div><h3>'+n+'</h3><small>Digital print · $'+prices[i]+' MXN</small></div><button aria-label="Add '+n+'" onclick="items.push('+i+');sync();cart()">＋</button></div></article>').join('');sync();
@@ -23,7 +24,7 @@ async function checkout(){
       show('<h2>Shop with Club Pliego</h2><p>Join the club to check out. Your items will stay in your bag.</p><button class="dark" onclick="club()">Join the club</button>');
       return;
     }
-    show('<h2>Checkout</h2><form onsubmit="event.preventDefault();pay(this)"><label>Name<input name="name" autocomplete="name" required maxlength="100"></label><label>Membership email<input name="email" type="email" readonly></label><p>Digital prints · Download your PNG files after checkout.</p><div class="payment-method"><strong class="card-brand">VISA</strong><div>Visa •••• 4242<small>Default card</small></div></div><p>Total: $'+total()+' MXN</p><button class="dark">Confirm order</button><p role="status"></p></form>');
+    show('<h2>Checkout</h2><form onsubmit="event.preventDefault();pay(this)"><label>Name<input name="name" autocomplete="name" required maxlength="100"></label><label>Membership email<input name="email" type="email" readonly></label><p>Digital prints · Download your PNG files after checkout.</p>'+defaultCard+'<p>Total: $'+total()+' MXN</p><button class="dark">Confirm order</button><p role="status"></p></form>');
     panel.querySelector('[name=email]').value=state.email;
   } catch {show('<p>Checkout could not be opened. Return to your bag and try again.</p>')}
 }
@@ -64,7 +65,7 @@ async function club(){
   let state;
   try {state=await (await fetch('/api/membresia')).json()} catch {show('<p>We could not check your membership. Please try again.</p>');return}
   if(state.email) localStorage.clubEmail=state.email;
-  show('<h2>Club Pliego</h2>'+(state.email?'<p>Your membership is active.</p><button onclick="receipt()">View confirmation</button><button onclick="cancelMember()">Cancel membership</button>':'<form onsubmit="event.preventDefault();activate(this)"><label>Email address<br><input name="email" type="email" autocomplete="email" required style="padding:12px;width:100%;margin:8px 0"></label><p>Your first month is free. We’ll send confirmation to your email address.</p><button class="dark" type="submit">Activate</button><p role="status"></p><small>By signing up, you agree to the <a href="/terminos" target="_blank" rel="noopener">terms and conditions</a>.</small></form>'))}
+  show('<h2>Club Pliego</h2>'+(state.email?'<p>Your membership is active.</p><button onclick="receipt()">View confirmation</button><button onclick="cancelMember()">Cancel membership</button>':'<form onsubmit="event.preventDefault();activate(this)"><label>Email address<br><input name="email" type="email" autocomplete="email" required style="padding:12px;width:100%;margin:8px 0"></label><p>Your first month is free. We’ll send confirmation to your email address.</p>'+defaultCard+'<button class="dark" type="submit">Activate</button><p role="status"></p><small>By signing up, you agree to the <a href="/terminos" target="_blank" rel="noopener">terms and conditions</a>.</small></form>'))}
 async function activate(form) {
   const button = form.querySelector('[type="submit"]');
   const status = form.querySelector('[role="status"]');
