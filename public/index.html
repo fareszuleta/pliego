@@ -2,13 +2,69 @@
 *{box-sizing:border-box}body{margin:0;background:#f5f3ea;color:#22251e;font:16px Arial,sans-serif}main,header,footer{width:min(1180px,92%);margin:auto}header,nav,.row,footer{display:flex;align-items:center;justify-content:space-between;gap:16px}header{height:78px;border-bottom:1px solid}strong{font: bold 34px Georgia}nav a,a{color:inherit}button{cursor:pointer;font:inherit;border:1px solid;background:transparent;border-radius:30px;padding:10px 18px;color:inherit}button:hover{background:#dddacd}.hero{margin:30px 0 50px;padding:clamp(24px,5vw,72px);background:#e6ddca;position:relative;overflow:hidden;isolation:isolate}.hero:after{content:"";position:absolute;z-index:-1;right:-8%;top:-45%;width:49%;height:200%;background:repeating-radial-gradient(ellipse at 60% 55%,#d94b30 0 12px,#edb987 13px 23px);transform:rotate(18deg)}h1{font:500 clamp(52px,7vw,96px)/.92 Georgia;margin:12px 0 22px;letter-spacing:-.06em}.dark{background:#242820;color:white}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}.print{height:250px;display:grid;place-items:center;background:#dedbd0}.poster{width:140px;height:190px;box-shadow:4px 8px 13px #30271c44;border:10px solid #f8f3e6;position:relative}.p0{background:repeating-radial-gradient(ellipse at 0 90%,#e54a2d 0 11px,#f1cc9e 12px 20px)}.p1{background:repeating-linear-gradient(50deg,#184c8b 0 14px,#cccdb0 15px 26px)}.p2{background:radial-gradient(circle at 50% 35%,#f4bb42 0 37%,transparent 38%),linear-gradient(150deg,#f2c7b8 54%,#574637 55%)}h2{font:36px Georgia;margin:20px 0}h3{font:23px Georgia;margin:15px 0 5px}small{color:#53564d}footer{margin-top:44px;padding:20px 0;border-top:1px solid}dialog{width:min(500px,93%);border:1px solid;background:#f5f3ea;padding:28px;max-height:82vh}dialog::backdrop{background:#20201877}dialog p{line-height:1.55}dialog button{margin:6px}.close{float:right}button:focus-visible,a:focus-visible{outline:3px solid #1674ba}@media(max-width:650px){.grid{grid-template-columns:1fr}.hero:after{right:-28%}.hero{padding:25px 18px}.hero p{max-width:70%}nav a{display:none}.print{height:220px}}
 
 .payment-method{display:flex;align-items:center;gap:14px;border:1px solid #c6c5b8;border-radius:12px;padding:14px 16px;margin:18px 0}.payment-method .card-brand{font:italic 700 16px Arial,sans-serif;color:#203475;background:#fff;border:1px solid #d3d3ca;border-radius:5px;padding:8px}.payment-method small{display:block;margin-top:4px}
-</style><header><strong>Pliego.</strong><nav><a href="#coleccion">Colección</a><button onclick="club()">Club Pliego</button><button id="bag" onclick="cart()">Bolsa (0)</button></nav></header><main><section class="hero"><small>CLUB PLIEGO</small><h1>El arte de<br>coleccionar.</h1><p>Un mes gratis de acceso a las láminas digitales del club.</p><button class="dark" onclick="club()">Ver membresía ↗</button></section><h2 id="coleccion">Colección de láminas</h2><div id="grid" class="grid"></div></main><footer><span>Pliego Ediciones · Tienda de prueba</span><a href="/terminos">Condiciones</a></footer><dialog id="d"><button class="close" onclick="d.close()" aria-label="Cerrar">×</button><div id="panel"></div></dialog><script>
+form input{display:block;width:100%;font:inherit;padding:12px;margin:6px 0 16px} </style><header><strong>Pliego.</strong><nav><a href="#coleccion">Colección</a><button onclick="club()">Club Pliego</button><button id="bag" onclick="cart()">Bolsa (0)</button></nav></header><main><section class="hero"><small>CLUB PLIEGO</small><h1>El arte de<br>coleccionar.</h1><p>Un mes gratis de acceso a las láminas digitales del club.</p><button class="dark" onclick="club()">Ver membresía ↗</button></section><h2 id="coleccion">Colección de láminas</h2><div id="grid" class="grid"></div></main><footer><span>Pliego Ediciones · Láminas digitales</span><a href="/terminos">Condiciones</a></footer><dialog id="d"><button class="close" onclick="d.close()" aria-label="Cerrar">×</button><div id="panel"></div></dialog><script>
 const names=['Órbita terracota','Ritmo cobalto','Sol de arcilla'],prices=[180,210,190];let items=JSON.parse(localStorage.items||'[]');
 function show(s){panel.innerHTML=s;if(!d.open)d.showModal()}
 function sync(){localStorage.items=JSON.stringify(items);bag.textContent='Bolsa ('+items.length+')'}
 grid.innerHTML=names.map((n,i)=>'<article><div class="print"><div class="poster p'+i+'"></div></div><div class="row"><div><h3>'+n+'</h3><small>Lámina digital · $'+prices[i]+' MXN</small></div><button aria-label="Añadir '+n+'" onclick="items.push('+i+');sync();cart()">＋</button></div></article>').join('');sync();
-function cart(){show('<h2>Tu bolsa</h2>'+items.map((i,j)=>'<p>'+names[i]+' · $'+prices[i]+' <button onclick="items.splice('+j+',1);sync();cart()">Quitar</button></p>').join('')+(items.length?'<p>Total: $'+items.reduce((a,i)=>a+prices[i],0)+' MXN</p><p>Tarjeta de prueba •••• 4242</p><button class="dark" onclick="items=[];sync();show(\'<h2>Pedido de prueba confirmado</h2><p>Importe cobrado: $0 MXN.</p>\')">Simular compra</button>':'<p>Tu bolsa está vacía.</p>'))}
-function club(){show('<h2>Club Pliego</h2>'+(localStorage.member?'<p>Membresía de prueba activa.</p><button onclick="receipt()">Ver confirmación</button><button onclick="delete localStorage.member;show(\'<h2>Membresía cancelada</h2>\')">Cancelar membresía</button>':'<form onsubmit="event.preventDefault();activate(this)"><label>Correo electrónico<br><input name="email" type="email" autocomplete="email" required style="padding:12px;width:100%;margin:8px 0"></label><p>Primer mes gratis. Recibirás la confirmación por correo.</p><div class="payment-method"><strong class="card-brand">VISA</strong><div><span>Visa •••• 4242</span><small>Tarjeta predeterminada</small></div></div><button class="dark" type="submit">Activar</button><p role="status"></p><small>Al suscribir tu correo, aceptas los <a href="/terminos" target="_blank" rel="noopener">términos y condiciones</a>.</small></form>'))}
+function cart(){
+  const lines=items.map((i,j)=>'<p>'+names[i]+' · $'+prices[i]+' <button onclick="items.splice('+j+',1);sync();cart()">Quitar</button></p>').join('');
+  show('<h2>Tu bolsa</h2>'+lines+(items.length?'<p>Total: $'+total()+' MXN</p><button class="dark" onclick="checkout()">Continuar al checkout</button>':'<p>Tu bolsa está vacía.</p>'));
+}
+function total(){return items.reduce((sum,id)=>sum+prices[id],0)}
+async function cancelMember(){
+  const response=await fetch('/api/cancelar',{method:'POST'});
+  if(response.ok){delete localStorage.member;delete localStorage.clubEmail;show('<h2>Membresía cancelada</h2>')}
+}
+async function checkout(){
+  try {
+    const state=await (await fetch('/api/membresia')).json();
+    if(!state.email){
+      show('<h2>Compra con Club Pliego</h2><p>Suscríbete para finalizar tu compra. Guardaremos los artículos de tu bolsa.</p><button class="dark" onclick="club()">Suscribirme</button>');
+      return;
+    }
+    show('<h2>Finalizar compra</h2><form onsubmit="event.preventDefault();pay(this)"><label>Nombre<input name="name" autocomplete="name" required maxlength="100"></label><label>Correo de tu membresía<input name="email" type="email" readonly></label><p>Láminas digitales · Descarga PNG después del pago.</p><p>Total: $'+total()+' MXN</p><button class="dark">Continuar al pago</button><p role="status"></p></form>');
+    panel.querySelector('[name=email]').value=state.email;
+  } catch {show('<p>No pudimos abrir el checkout. Vuelve a la bolsa e inténtalo de nuevo.</p>')}
+}
+async function pay(form){
+  const button=form.querySelector('button'),status=form.querySelector('[role=status]');
+  button.disabled=true;
+  const purchase={name:form.elements.name.value.trim(),email:form.elements.email.value,items:items.slice()};
+  const signature=JSON.stringify(purchase);
+  if(sessionStorage.purchase!==signature){sessionStorage.purchase=signature;sessionStorage.attempt=crypto.randomUUID()}
+  try {
+    const response=await fetch('/api/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...purchase,attempt:sessionStorage.attempt})});
+    const result=await response.json();
+    if(!response.ok){status.textContent=result.message;return}
+    sessionStorage.setItem(result.id,JSON.stringify(purchase.items));
+    location.assign(result.url);
+  } catch {status.textContent='No pudimos abrir el pago. Tu bolsa sigue guardada.'}
+  finally {button.disabled=false}
+}
+async function order(id){
+  show('<p>Consultando el pago…</p>');
+  try {
+    const response=await fetch('/api/pedido?id='+encodeURIComponent(id));
+    const result=await response.json();
+    if(!response.ok){panel.textContent=result.message;return}
+    const saved=sessionStorage.getItem(id);
+    if(saved){
+      for(const item of JSON.parse(saved)){const pos=items.indexOf(item);if(pos>=0)items.splice(pos,1)}
+      sync();sessionStorage.removeItem(id);delete sessionStorage.purchase;
+    }
+    const links=result.ids.map(i=>'<p><a href="/api/descarga?id='+encodeURIComponent(id)+'&obra='+['orbita','ritmo','sol'][i]+'">Descargar '+names[i]+' (PNG)</a></p>').join('');
+    show('<h2>Pago confirmado</h2><p>Total pagado: $'+result.total+' MXN.</p>'+links+'<small>Guarda esta página para volver a descargar tus láminas.</small>');
+  } catch {panel.textContent='No pudimos consultar el pedido. Recarga esta página para volver a comprobarlo.'}
+}
+const query=new URLSearchParams(location.search);
+if(query.has('pedido'))order(query.get('pedido'));
+else if(query.has('bolsa')){delete sessionStorage.purchase;cart()}
+async function club(){
+  let state;
+  try {state=await (await fetch('/api/membresia')).json()} catch {show('<p>No pudimos consultar tu membresía. Intenta de nuevo.</p>');return}
+  if(state.email) localStorage.clubEmail=state.email;
+  show('<h2>Club Pliego</h2>'+(state.email?'<p>Membresía activa.</p><button onclick="receipt()">Ver confirmación</button><button onclick="cancelMember()">Cancelar membresía</button>':'<form onsubmit="event.preventDefault();activate(this)"><label>Correo electrónico<br><input name="email" type="email" autocomplete="email" required style="padding:12px;width:100%;margin:8px 0"></label><p>Primer mes gratis. Recibirás la confirmación por correo.</p><button class="dark" type="submit">Activar</button><p role="status"></p><small>Al suscribir tu correo, aceptas los <a href="/terminos" target="_blank" rel="noopener">términos y condiciones</a>.</small></form>'))}
 async function activate(form) {
   const button = form.querySelector('[type="submit"]');
   const status = form.querySelector('[role="status"]');
@@ -28,5 +84,5 @@ async function activate(form) {
     button.disabled = false;
   }
 }
-function receipt(){show('<h2>Confirmación de suscripción</h2><p>Cuenta: <span id="account"></span></p><p>Tu primer mes de Club Pliego es gratis. Puedes cancelar en Club Pliego.</p><p>Tienda de prueba sin cargos reales.</p><button onclick="club()">Gestionar membresía</button>');document.getElementById('account').textContent=localStorage.clubEmail||''}
+function receipt(){show('<h2>Confirmación de suscripción</h2><p>Cuenta: <span id="account"></span></p><p>Tu primer mes de Club Pliego es gratis. Puedes cancelar en Club Pliego.</p><p>Las láminas se pagan por separado.</p><button class="dark" onclick="cart()">Volver a mi bolsa</button><button onclick="club()">Gestionar membresía</button>');document.getElementById('account').textContent=localStorage.clubEmail||''}
 </script></html>

@@ -18,3 +18,9 @@ Al pulsar **Activar**, el servidor envía el mensaje a la dirección introducida
 ## Ejecución local
 
 Usa Node.js 22 o posterior. Exporta las dos variables en tu entorno y ejecuta `npm start`. El puerto predeterminado es 3000. Render lo asigna con `PORT`.
+
+## Compras de láminas
+
+Configura STRIPE_SECRET_KEY en las variables privadas de Render. Usa la clave de producción de tu cuenta de Stripe para aceptar pagos reales o su clave de pruebas para validar el recorrido. Render proporciona RENDER_EXTERNAL_URL para el retorno del pago. Puedes definir PUBLIC_URL si utilizas un dominio propio. MEMBER_SECRET permite usar una clave estable para la cookie de membresía, independiente de la clave de correo.
+
+Los precios se calculan en el servidor. El pago único se autoriza en Stripe Checkout y la página de regreso verifica su estado antes de entregar los archivos PNG. El enlace de confirmación es privado y permite recuperar las descargas. El club no factura cuotas automáticamente.

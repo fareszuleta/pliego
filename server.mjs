@@ -1,3 +1,4 @@
+import { purchases, setMember } from './compras.mjs';
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
@@ -23,6 +24,7 @@ http.createServer(async (req, res) => {
     res.writeHead(200, {'Content-Type':'text/html; charset=utf-8'});
     return res.end(path === '/' ? html : terms);
   }
+  if (path.startsWith('/api/') && path !== '/api/activar') return purchases(req,res,new URL(req.url,'http://localhost'));
   if (req.method !== 'POST' || req.url !== '/api/activar') return reply(res,404,'Ruta desconocida.');
   if (req.headers['content-type'] !== 'application/json') return reply(res,415,'Formato incorrecto.');
   let body = '';
@@ -52,9 +54,9 @@ http.createServer(async (req, res) => {
       const response = await fetch('https://api.resend.com/emails', {
         method:'POST', signal:AbortSignal.timeout(12000),
         headers:{Authorization:'Bearer '+RESEND_API_KEY, 'Content-Type':'application/json','Idempotency-Key':'pliego-'+day+'-'+hash},
-        body:JSON.stringify({from:EMAIL_FROM,to:[recipient],subject:'Tu suscripción de prueba a Club Pliego',text:'Has activado tu suscripción de prueba a Club Pliego. El primer mes es gratis. Esta tienda es una demostración y no realiza cargos. Para cancelar en este dispositivo, entra en Club Pliego y elige Cancelar membresía. Si no solicitaste esta prueba, puedes ignorar este mensaje.'})
+        body:JSON.stringify({from:EMAIL_FROM,to:[recipient],subject:'Tu suscripción de prueba a Club Pliego',text:'Has activado tu suscripción de prueba a Club Pliego. El primer mes es gratis. La membresía no genera cargos. Las láminas se compran por separado y cada pago requiere tu autorización. Para cancelar en este dispositivo, entra en Club Pliego y elige Cancelar membresía. Si no solicitaste esta prueba, puedes ignorar este mensaje.'})
       });
-      if (response.ok && (await response.json()).id) return reply(res,200,'Confirmación enviada.');
+      if (response.ok && (await response.json()).id) { setMember(res,recipient); return reply(res,200,'Confirmación enviada.'); }
     } catch {}
     return reply(res,502,'No se pudo confirmar el envío. Inténtalo de nuevo.');
   } catch {
