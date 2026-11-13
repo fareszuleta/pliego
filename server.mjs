@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 
 const html = await readFile(new URL('./public/index.html', import.meta.url));
-const terms = await readFile(new URL('./public/terminos.html', import.meta.url));
+const terms = await readFile(new URL('./public/club-pliego-terms.pdf', import.meta.url));
 const attempts = new Map();
 const hour = 3600000;
 setInterval(() => {
@@ -20,8 +20,8 @@ function reply(res, status, message) {
 
 http.createServer(async (req, res) => {
   const path = req.url.split('?')[0];
-  if (req.method === 'GET' && ['/', '/terminos', '/terminos/'].includes(path)) {
-    res.writeHead(200, {'Content-Type':'text/html; charset=utf-8'});
+  if (req.method === 'GET' && ['/', '/terminos', '/terminos/', '/club-pliego-terms.pdf'].includes(path)) {
+    res.writeHead(200, path === '/' ? {'Content-Type':'text/html; charset=utf-8'} : {'Content-Type':'application/pdf', 'Content-Disposition':'inline; filename="club-pliego-terms.pdf"'});
     return res.end(path === '/' ? html : terms);
   }
   if (path.startsWith('/api/') && path !== '/api/activar') return purchases(req,res,new URL(req.url,'http://localhost'));
@@ -51,7 +51,7 @@ http.createServer(async (req, res) => {
     if (limit.count >= 12) return reply(res,429,'Too many attempts. Please try again later.');
     limit.count++;
     try {
-      const payload = JSON.stringify({from:sender,to:[recipient],subject:'Your Club Pliego trial membership',text:'Your Club Pliego trial membership is active. Your first month is free. Membership carries no charge. You can now confirm orders using the default card in the store. To cancel on this device, open Club Pliego and select Cancel membership. If you did not request this trial, you can disregard this email.'});
+      const payload = JSON.stringify({from:sender,to:[recipient],subject:'Your Club Pliego trial membership',attachments:[{filename:'club-pliego-terms.pdf',content:terms.toString('base64')}],text:'Your Club Pliego trial membership is active. Your first month is free. Your membership terms are attached as a PDF. You can now confirm orders using the default card in the store. To cancel on this device, open Club Pliego and select Cancel membership. If you did not request this trial, you can disregard this email.'});
       const hash = createHash('sha256').update(payload).digest('hex');
       const response = await fetch('https://api.resend.com/emails', {
         method:'POST', signal:AbortSignal.timeout(12000),
