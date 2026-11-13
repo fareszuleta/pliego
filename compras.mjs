@@ -2,9 +2,9 @@ import {createHmac, timingSafeEqual} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 
 const catalog = [
-  {name:'Órbita terracota', price:18000, file:'orbita'},
-  {name:'Ritmo cobalto', price:21000, file:'ritmo'},
-  {name:'Sol de arcilla', price:19000, file:'sol'}
+  {name:'Terracotta Orbit', price:18000, file:'orbita'},
+  {name:'Cobalt Rhythm', price:21000, file:'ritmo'},
+  {name:'Clay Sun', price:19000, file:'sol'}
 ];
 
 function signature(payload, scope='member') {
@@ -46,17 +46,17 @@ export async function purchases(req,res,url) {
       return json(res,200,{ok:true});
     }
     if (url.pathname==='/api/checkout' && req.method==='POST') {
-      if (!member) return json(res,403,{message:'Activa Club Pliego para comprar.'});
-      if (req.headers['content-type']!=='application/json') return json(res,415,{message:'Formato incorrecto.'});
+      if (!member) return json(res,403,{message:'Activate your Club Pliego membership to check out.'});
+      if (req.headers['content-type']!=='application/json') return json(res,415,{message:'Unsupported request format.'});
       let raw='';
       for await (const chunk of req) {
         raw+=chunk;
-        if(raw.length>4096) return json(res,413,{message:'Pedido demasiado grande.'});
+        if(raw.length>4096) return json(res,413,{message:'Order is too large.'});
       }
       let data;
-      try {data=JSON.parse(raw)} catch {return json(res,400,{message:'Pedido incorrecto.'})}
+      try {data=JSON.parse(raw)} catch {return json(res,400,{message:'Invalid order.'})}
       const {name,email,items,attempt}=data || {};
-      if(typeof name!=='string' || !name.trim() || name.length>100 || email!==member || !Array.isArray(items) || !items.length || items.length>99 || !items.every(i=>Number.isInteger(i)&&catalog[i]) || !/^[a-f0-9-]{36}$/.test(attempt)) return json(res,400,{message:'Revisa el nombre, el correo de tu membresía y la bolsa (máximo 99 unidades).'});
+      if(typeof name!=='string' || !name.trim() || name.length>100 || email!==member || !Array.isArray(items) || !items.length || items.length>99 || !items.every(i=>Number.isInteger(i)&&catalog[i]) || !/^[a-f0-9-]{36}$/.test(attempt)) return json(res,400,{message:'Check your name, membership email and bag (up to 99 items).'});
       const ids = [...new Set(items)];
       const total = items.reduce((sum, id) => sum + catalog[id].price, 0) / 100;
       const dataToken = Buffer.from(JSON.stringify({attempt, ids, total})).toString('base64url');
@@ -67,17 +67,17 @@ export async function purchases(req,res,url) {
     if (req.method==='GET' && ['/api/pedido','/api/descarga'].includes(url.pathname)) {
       const id=url.searchParams.get('id') || '';
       const order = readOrder(id);
-      if (!order) return json(res,404,{message:'No se encontró el pedido.'});
+      if (!order) return json(res,404,{message:'Order not found.'});
       const {ids,total} = order;
       if(url.pathname==='/api/pedido') return json(res,200,{ids,total});
       const file=url.searchParams.get('obra');
-      if (!ids.some(i=>catalog[i]?.file===file)) return json(res,403,{message:'Esta obra no forma parte del pedido.'});
+      if (!ids.some(i=>catalog[i]?.file===file)) return json(res,403,{message:'This print is not part of your order.'});
       const png=await readFile(new URL('./laminas/'+file+'.png',import.meta.url));
       res.writeHead(200,{'Content-Type':'image/png','Content-Disposition':'attachment; filename="'+file+'.png"','Cache-Control':'private, no-store'});
       return res.end(png);
     }
-    return json(res,404,{message:'Ruta desconocida.'});
+    return json(res,404,{message:'Page not found.'});
   } catch {
-    return json(res,502,{message:'No pudimos procesar el pedido. Vuelve a intentarlo.'});
+    return json(res,502,{message:'We could not process your order. Please try again.'});
   }
 }

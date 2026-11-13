@@ -1,24 +1,24 @@
-# Pliego Ediciones
+# Pliego Editions
 
-Tienda de demostración con carrito y suscripción de prueba. La tarjeta es ficticia y no se realizan cargos.
+A digital print shop with a shopping bag and a trial membership. Checkout uses a fictional card and never processes charges.
 
-## Despliegue en Render
+## Deploy on Render
 
-Crea un Web Service de Node.js conectado a este repositorio. Usa `npm install` como comando de compilación y `npm start` como comando de inicio.
+Create a Node.js web service connected to this repository. Set the build command to `npm install` and the start command to `npm start`.
 
-Configura estas variables en el entorno privado del servicio antes de desplegar.
+Set the following private environment variables before deploying.
 
-| Variable | Valor |
+| Variable | Value |
 | --- | --- |
-| RESEND_API_KEY | Clave de envío de tu cuenta de Resend |
-| EMAIL_FROM | Remitente de un dominio verificado en Resend |
+| RESEND_API_KEY | A sending key from your Resend account |
+| EMAIL_FROM | A sender address on a domain verified with Resend |
 
-Al pulsar **Activar**, el servidor envía el mensaje a la dirección introducida mediante Resend. La membresía de prueba se guarda en ese navegador cuando el proveedor acepta el correo. Para comprobar la entrega final, realiza una activación con una dirección propia y consulta la bandeja de entrada o el evento de entrega en Resend.
+When a visitor selects **Activate**, the server asks Resend to send a confirmation to the submitted email address. Once Resend accepts the email, the store records the membership in that browser. To check delivery, activate with your own address and check your inbox or the delivery event in Resend.
 
-## Ejecución local
+## Run locally
 
-Usa Node.js 22 o posterior. Exporta las dos variables en tu entorno y ejecuta `npm start`. El puerto predeterminado es 3000. Render lo asigna con `PORT`.
+Use Node.js 22 or later. Export the two variables above and run `npm start`. The default port is 3000. Render assigns the port through `PORT`.
 
-## Compras de láminas
+## Ordering prints
 
-El checkout requiere una membresía activa, utiliza la Visa de demostración terminada en 4242 y confirma el pedido sin procesar cargos. El servidor calcula el total y firma un enlace para descargar las obras seleccionadas. Define MEMBER_SECRET como secreto estable en Render para conservar las confirmaciones cuando cambies la clave del servicio de correo.
+Checkout requires an active membership and uses the default demonstration Visa ending in 4242. The server calculates the order total and signs a download link for the selected artwork. Set a stable `MEMBER_SECRET` in Render to keep confirmation links valid when rotating your email service key.

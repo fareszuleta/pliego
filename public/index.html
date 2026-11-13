@@ -1,31 +1,31 @@
-<!doctype html><html lang="es"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pliego · Tienda de láminas</title><style>
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pliego · Print Shop</title><style>
 *{box-sizing:border-box}body{margin:0;background:#f5f3ea;color:#22251e;font:16px Arial,sans-serif}main,header,footer{width:min(1180px,92%);margin:auto}header,nav,.row,footer{display:flex;align-items:center;justify-content:space-between;gap:16px}header{height:78px;border-bottom:1px solid}strong{font: bold 34px Georgia}nav a,a{color:inherit}button{cursor:pointer;font:inherit;border:1px solid;background:transparent;border-radius:30px;padding:10px 18px;color:inherit}button:hover{background:#dddacd}.hero{margin:30px 0 50px;padding:clamp(24px,5vw,72px);background:#e6ddca;position:relative;overflow:hidden;isolation:isolate}.hero:after{content:"";position:absolute;z-index:-1;right:-8%;top:-45%;width:49%;height:200%;background:repeating-radial-gradient(ellipse at 60% 55%,#d94b30 0 12px,#edb987 13px 23px);transform:rotate(18deg)}h1{font:500 clamp(52px,7vw,96px)/.92 Georgia;margin:12px 0 22px;letter-spacing:-.06em}.dark{background:#242820;color:white}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}.print{height:250px;display:grid;place-items:center;background:#dedbd0}.poster{width:140px;height:190px;box-shadow:4px 8px 13px #30271c44;border:10px solid #f8f3e6;position:relative}.p0{background:repeating-radial-gradient(ellipse at 0 90%,#e54a2d 0 11px,#f1cc9e 12px 20px)}.p1{background:repeating-linear-gradient(50deg,#184c8b 0 14px,#cccdb0 15px 26px)}.p2{background:radial-gradient(circle at 50% 35%,#f4bb42 0 37%,transparent 38%),linear-gradient(150deg,#f2c7b8 54%,#574637 55%)}h2{font:36px Georgia;margin:20px 0}h3{font:23px Georgia;margin:15px 0 5px}small{color:#53564d}footer{margin-top:44px;padding:20px 0;border-top:1px solid}dialog{width:min(500px,93%);border:1px solid;background:#f5f3ea;padding:28px;max-height:82vh}dialog::backdrop{background:#20201877}dialog p{line-height:1.55}dialog button{margin:6px}.close{float:right}button:focus-visible,a:focus-visible{outline:3px solid #1674ba}@media(max-width:650px){.grid{grid-template-columns:1fr}.hero:after{right:-28%}.hero{padding:25px 18px}.hero p{max-width:70%}nav a{display:none}.print{height:220px}}
 
 .payment-method{display:flex;align-items:center;gap:14px;border:1px solid #c6c5b8;border-radius:12px;padding:14px 16px;margin:18px 0}.payment-method .card-brand{font:italic 700 16px Arial,sans-serif;color:#203475;background:#fff;border:1px solid #d3d3ca;border-radius:5px;padding:8px}.payment-method small{display:block;margin-top:4px}
-form input{display:block;width:100%;font:inherit;padding:12px;margin:6px 0 16px} </style><header><strong>Pliego.</strong><nav><a href="#coleccion">Colección</a><button onclick="club()">Club Pliego</button><button id="bag" onclick="cart()">Bolsa (0)</button></nav></header><main><section class="hero"><small>CLUB PLIEGO</small><h1>El arte de<br>coleccionar.</h1><p>Un mes gratis de acceso a las láminas digitales del club.</p><button class="dark" onclick="club()">Ver membresía ↗</button></section><h2 id="coleccion">Colección de láminas</h2><div id="grid" class="grid"></div></main><footer><span>Pliego Ediciones · Láminas digitales</span><a href="/terminos">Condiciones</a></footer><dialog id="d"><button class="close" onclick="d.close()" aria-label="Cerrar">×</button><div id="panel"></div></dialog><script>
-const names=['Órbita terracota','Ritmo cobalto','Sol de arcilla'],prices=[180,210,190];let items=JSON.parse(localStorage.items||'[]');
+form input{display:block;width:100%;font:inherit;padding:12px;margin:6px 0 16px} </style><header><strong>Pliego.</strong><nav><a href="#coleccion">Collection</a><button onclick="club()">Club Pliego</button><button id="bag" onclick="cart()">Bag (0)</button></nav></header><main><section class="hero"><small>CLUB PLIEGO</small><h1>The art of<br>collecting.</h1><p>Enjoy your first month of access to the club’s digital prints for free.</p><button class="dark" onclick="club()">Explore membership ↗</button></section><h2 id="coleccion">Print collection</h2><div id="grid" class="grid"></div></main><footer><span>Pliego Editions · Digital prints</span><a href="/terminos">Terms and conditions</a></footer><dialog id="d"><button class="close" onclick="d.close()" aria-label="Close">×</button><div id="panel"></div></dialog><script>
+const names=['Terracotta Orbit','Cobalt Rhythm','Clay Sun'],prices=[180,210,190];let items=JSON.parse(localStorage.items||'[]');
 function show(s){panel.innerHTML=s;if(!d.open)d.showModal()}
-function sync(){localStorage.items=JSON.stringify(items);bag.textContent='Bolsa ('+items.length+')'}
-grid.innerHTML=names.map((n,i)=>'<article><div class="print"><div class="poster p'+i+'"></div></div><div class="row"><div><h3>'+n+'</h3><small>Lámina digital · $'+prices[i]+' MXN</small></div><button aria-label="Añadir '+n+'" onclick="items.push('+i+');sync();cart()">＋</button></div></article>').join('');sync();
+function sync(){localStorage.items=JSON.stringify(items);bag.textContent='Bag ('+items.length+')'}
+grid.innerHTML=names.map((n,i)=>'<article><div class="print"><div class="poster p'+i+'"></div></div><div class="row"><div><h3>'+n+'</h3><small>Digital print · $'+prices[i]+' MXN</small></div><button aria-label="Add '+n+'" onclick="items.push('+i+');sync();cart()">＋</button></div></article>').join('');sync();
 function cart(){
-  const lines=items.map((i,j)=>'<p>'+names[i]+' · $'+prices[i]+' <button onclick="items.splice('+j+',1);sync();cart()">Quitar</button></p>').join('');
-  show('<h2>Tu bolsa</h2>'+lines+(items.length?'<p>Total: $'+total()+' MXN</p><button class="dark" onclick="checkout()">Continuar al checkout</button>':'<p>Tu bolsa está vacía.</p>'));
+  const lines=items.map((i,j)=>'<p>'+names[i]+' · $'+prices[i]+' <button onclick="items.splice('+j+',1);sync();cart()">Remove</button></p>').join('');
+  show('<h2>Your bag</h2>'+lines+(items.length?'<p>Total: $'+total()+' MXN</p><button class="dark" onclick="checkout()">Continue to checkout</button>':'<p>Your bag is empty.</p>'));
 }
 function total(){return items.reduce((sum,id)=>sum+prices[id],0)}
 async function cancelMember(){
   const response=await fetch('/api/cancelar',{method:'POST'});
-  if(response.ok){delete localStorage.member;delete localStorage.clubEmail;show('<h2>Membresía cancelada</h2>')}
+  if(response.ok){delete localStorage.member;delete localStorage.clubEmail;show('<h2>Membership canceled</h2>')}
 }
 async function checkout(){
   try {
     const state=await (await fetch('/api/membresia')).json();
     if(!state.email){
-      show('<h2>Compra con Club Pliego</h2><p>Suscríbete para finalizar tu compra. Guardaremos los artículos de tu bolsa.</p><button class="dark" onclick="club()">Suscribirme</button>');
+      show('<h2>Shop with Club Pliego</h2><p>Join the club to check out. Your items will stay in your bag.</p><button class="dark" onclick="club()">Join the club</button>');
       return;
     }
-    show('<h2>Finalizar compra</h2><form onsubmit="event.preventDefault();pay(this)"><label>Nombre<input name="name" autocomplete="name" required maxlength="100"></label><label>Correo de tu membresía<input name="email" type="email" readonly></label><p>Láminas digitales · Descarga PNG al confirmar.</p><div class="payment-method"><strong class="card-brand">VISA</strong><div>Visa •••• 4242<small>Tarjeta predeterminada</small></div></div><p>Total: $'+total()+' MXN</p><button class="dark">Confirmar compra</button><p role="status"></p></form>');
+    show('<h2>Checkout</h2><form onsubmit="event.preventDefault();pay(this)"><label>Name<input name="name" autocomplete="name" required maxlength="100"></label><label>Membership email<input name="email" type="email" readonly></label><p>Digital prints · Download your PNG files after checkout.</p><div class="payment-method"><strong class="card-brand">VISA</strong><div>Visa •••• 4242<small>Default card</small></div></div><p>Total: $'+total()+' MXN</p><button class="dark">Confirm order</button><p role="status"></p></form>');
     panel.querySelector('[name=email]').value=state.email;
-  } catch {show('<p>No pudimos abrir el checkout. Vuelve a la bolsa e inténtalo de nuevo.</p>')}
+  } catch {show('<p>Checkout could not be opened. Return to your bag and try again.</p>')}
 }
 async function pay(form){
   const button=form.querySelector('button'),status=form.querySelector('[role=status]');
@@ -39,11 +39,11 @@ async function pay(form){
     if(!response.ok){status.textContent=result.message;return}
     sessionStorage.setItem(result.id,JSON.stringify(purchase.items));
     location.assign(result.url);
-  } catch {status.textContent='No pudimos confirmar la compra. Tu bolsa sigue guardada.'}
+  } catch {status.textContent='We could not confirm your order. Your bag has been saved.'}
   finally {button.disabled=false}
 }
 async function order(id){
-  show('<p>Consultando el pedido…</p>');
+  show('<p>Looking up your order…</p>');
   try {
     const response=await fetch('/api/pedido?id='+encodeURIComponent(id));
     const result=await response.json();
@@ -53,24 +53,24 @@ async function order(id){
       for(const item of JSON.parse(saved)){const pos=items.indexOf(item);if(pos>=0)items.splice(pos,1)}
       sync();sessionStorage.removeItem(id);delete sessionStorage.purchase;
     }
-    const links=result.ids.map(i=>'<p><a href="/api/descarga?id='+encodeURIComponent(id)+'&obra='+['orbita','ritmo','sol'][i]+'">Descargar '+names[i]+' (PNG)</a></p>').join('');
-    show('<h2>Pedido confirmado</h2><p>Total del pedido: $'+result.total+' MXN · Visa •••• 4242</p>'+links+'<small>Guarda esta página para volver a descargar tus láminas.</small>');
-  } catch {panel.textContent='No pudimos consultar el pedido. Recarga esta página para volver a comprobarlo.'}
+    const links=result.ids.map(i=>'<p><a href="/api/descarga?id='+encodeURIComponent(id)+'&obra='+['orbita','ritmo','sol'][i]+'">Download '+names[i]+' (PNG)</a></p>').join('');
+    show('<h2>Order confirmed</h2><p>Order total: $'+result.total+' MXN · Visa •••• 4242</p>'+links+'<small>Bookmark this page to download your prints again.</small>');
+  } catch {panel.textContent='We could not retrieve your order. Reload this page to try again.'}
 }
 const query=new URLSearchParams(location.search);
 if(query.has('pedido'))order(query.get('pedido'));
 else if(query.has('bolsa')){delete sessionStorage.purchase;cart()}
 async function club(){
   let state;
-  try {state=await (await fetch('/api/membresia')).json()} catch {show('<p>No pudimos consultar tu membresía. Intenta de nuevo.</p>');return}
+  try {state=await (await fetch('/api/membresia')).json()} catch {show('<p>We could not check your membership. Please try again.</p>');return}
   if(state.email) localStorage.clubEmail=state.email;
-  show('<h2>Club Pliego</h2>'+(state.email?'<p>Membresía activa.</p><button onclick="receipt()">Ver confirmación</button><button onclick="cancelMember()">Cancelar membresía</button>':'<form onsubmit="event.preventDefault();activate(this)"><label>Correo electrónico<br><input name="email" type="email" autocomplete="email" required style="padding:12px;width:100%;margin:8px 0"></label><p>Primer mes gratis. Recibirás la confirmación por correo.</p><button class="dark" type="submit">Activar</button><p role="status"></p><small>Al suscribir tu correo, aceptas los <a href="/terminos" target="_blank" rel="noopener">términos y condiciones</a>.</small></form>'))}
+  show('<h2>Club Pliego</h2>'+(state.email?'<p>Your membership is active.</p><button onclick="receipt()">View confirmation</button><button onclick="cancelMember()">Cancel membership</button>':'<form onsubmit="event.preventDefault();activate(this)"><label>Email address<br><input name="email" type="email" autocomplete="email" required style="padding:12px;width:100%;margin:8px 0"></label><p>Your first month is free. We’ll send confirmation to your email address.</p><button class="dark" type="submit">Activate</button><p role="status"></p><small>By signing up, you agree to the <a href="/terminos" target="_blank" rel="noopener">terms and conditions</a>.</small></form>'))}
 async function activate(form) {
   const button = form.querySelector('[type="submit"]');
   const status = form.querySelector('[role="status"]');
   const email = form.elements.email.value.trim();
   button.disabled = true;
-  status.textContent = 'Enviando confirmación…';
+  status.textContent = 'Sending confirmation…';
   try {
     const response = await fetch('/api/activar', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
     const result = await response.json();
@@ -79,10 +79,10 @@ async function activate(form) {
     localStorage.member = Date.now();
     receipt();
   } catch {
-    status.textContent = 'No se pudo confirmar el envío. Inténtalo de nuevo.';
+    status.textContent = 'We could not confirm that your email was sent. Please try again.';
   } finally {
     button.disabled = false;
   }
 }
-function receipt(){show('<h2>Confirmación de suscripción</h2><p>Cuenta: <span id="account"></span></p><p>Tu primer mes de Club Pliego es gratis. Puedes cancelar en Club Pliego.</p><p>Ya puedes finalizar los pedidos de tu bolsa.</p><button class="dark" onclick="cart()">Volver a mi bolsa</button><button onclick="club()">Gestionar membresía</button>');document.getElementById('account').textContent=localStorage.clubEmail||''}
+function receipt(){show('<h2>Membership confirmation</h2><p>Account: <span id="account"></span></p><p>Your first month is free. You can cancel in Club Pliego.</p><p>You can now check out with the items in your bag.</p><button class="dark" onclick="cart()">Return to my bag</button><button onclick="club()">Manage membership</button>');document.getElementById('account').textContent=localStorage.clubEmail||''}
 </script></html>
