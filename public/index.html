@@ -67,6 +67,7 @@ async function order(id){
 const query=new URLSearchParams(location.search);
 if(query.has('pedido'))order(query.get('pedido'));
 else if(query.has('bolsa')){delete sessionStorage.purchase;cart()}
+else if(query.has('join'))setTimeout(club,200);
 async function club(){
   let state;
   try {state=await (await fetch('/api/membresia')).json()} catch {show('<p>We could not check your membership. Please try again.</p>');return}
