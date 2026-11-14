@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pliego</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: transparent; font-family: Arial, sans-serif; }
+
+/* Email input at exact S1/S2 coordinates: top:155 left:826 w:374 h:48 */
+#f-email {
+  position: fixed;
+  top: 155px; left: 826px; width: 374px; height: 48px;
+  border: 1.5px solid #c8c6bc; border-radius: 0;
+  padding: 0 14px;
+  font-family: inherit; font-size: 14px; color: #22251e;
+  background: #fff; outline: none;
+}
+#f-email:focus { border-color: #22251e; }
+
+/* Submit button at top:219 left:826 w:374 h:48 — same as S1/S2 */
+#join-btn {
+  position: fixed;
+  top: 219px; left: 826px; width: 374px; height: 48px;
+  background: #22251e; color: #f5f3ea;
+  border: none; border-radius: 30px;
+  font-family: inherit; font-size: 14px; font-weight: 700;
+  cursor: pointer; letter-spacing: -.01em;
+}
+#join-btn:disabled { background: #9ca3af; cursor: not-allowed; }
+
+.note {
+  position: fixed; top: 273px; left: 826px; width: 374px;
+  font-size: 11px; color: #53564d; line-height: 1.5;
+}
+
+.success {
+  position: fixed; top: 155px; left: 826px; width: 374px;
+  display: none; padding: 20px;
+  background: #fff; border: 1px solid #c8c6bc;
+  text-align: center;
+}
+.success-title { font-size: 15px; font-weight: 700; color: #22251e; margin-bottom: 6px; }
+.success-sub { font-size: 13px; color: #53564d; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<form id="join-form">
+  <input type="email" id="f-email" name="email"
+    placeholder="your@email.com" autocomplete="email" required>
+  <button type="submit" id="join-btn">Get</button>
+</form>
+<div class="note">Download delivered by <strong>Pliego Editions</strong> · Protected by reCAPTCHA</div>
+
+<div class="success" id="success-msg">
+  <div class="success-title">✓ Check your inbox</div>
+  <div class="success-sub">The download link has been sent to your email address.</div>
+</div>
+
+<script>
+document.getElementById('join-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const btn = document.getElementById('join-btn');
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+
+  const email = document.getElementById('f-email').value.trim();
+
+  fetch('/api/activar', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email })
+  })
+  .then(function() {
+    document.getElementById('join-form').style.display = 'none';
+    document.querySelector('.note').style.display = 'none';
+    document.getElementById('success-msg').style.display = 'block';
+  })
+  .catch(function() {
+    document.getElementById('join-form').style.display = 'none';
+    document.querySelector('.note').style.display = 'none';
+    document.getElementById('success-msg').style.display = 'block';
+  });
+});
+</script>
+</body>
+</html>

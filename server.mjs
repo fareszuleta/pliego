@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 
 const html = await readFile(new URL('./public/index.html', import.meta.url));
+const joinHtml = await readFile(new URL('./public/join.html', import.meta.url));
 const terms = await readFile(new URL('./public/club-pliego-terms.pdf', import.meta.url));
 const attempts = new Map();
 const hour = 3600000;
@@ -20,7 +21,11 @@ function reply(res, status, message) {
 
 http.createServer(async (req, res) => {
   const path = req.url.split('?')[0];
-  if (req.method === 'GET' && ['/', '/terminos', '/terminos/', '/club-pliego-terms.pdf'].includes(path)) {
+  if (req.method === 'GET' && ['/', '/terminos', '/terminos/', '/club-pliego-terms.pdf', '/join', '/join/'].includes(path)) {
+    if (path === '/join' || path === '/join/') {
+      res.writeHead(200, {'Content-Type':'text/html; charset=utf-8'});
+      return res.end(joinHtml);
+    }
     res.writeHead(200, path === '/' ? {'Content-Type':'text/html; charset=utf-8'} : {'Content-Type':'application/pdf', 'Content-Disposition':'inline; filename="club-pliego-terms.pdf"'});
     return res.end(path === '/' ? html : terms);
   }
