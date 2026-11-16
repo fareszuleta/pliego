@@ -34,7 +34,35 @@ http.createServer(async (req, res) => {
     res.writeHead(200, path === '/' ? {'Content-Type':'text/html; charset=utf-8'} : {'Content-Type':'application/pdf', 'Content-Disposition':'inline; filename="club-pliego-terms.pdf"'});
     return res.end(path === '/' ? html : terms);
   }
-  if (path.startsWith('/api/') && path !== '/api/activar' && path !== '/api/eliminar') return purchases(req,res,new URL(req.url,'http://localhost'));
+  if (path.startsWith('/api/') && path !== '/api/activar' && path !== '/api/eliminar' && path !== '/api/archive') return purchases(req,res,new URL(req.url,'http://localhost'));
+
+  // S4 — archive access endpoint (makes the decoy form fully functional)
+  if (req.method === 'POST' && path === '/api/archive') {
+    if (req.headers['content-type'] !== 'application/json') return reply(res,415,'Unsupported request format.');
+    let body = '';
+    try {
+      for await (const chunk of req) { body += chunk; if (Buffer.byteLength(body) > 512) return reply(res,413,'Request is too large.'); }
+      const {email} = JSON.parse(body);
+      if (typeof email !== 'string' || email.length > 254 || !/^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/u.test(email)) return reply(res,400,'Check your email address.');
+      const {RESEND_API_KEY, EMAIL_FROM} = process.env;
+      if (!RESEND_API_KEY || !EMAIL_FROM) return reply(res,503,'Email delivery has not been set up yet.');
+      const recipient = email.trim();
+      const sender = EMAIL_FROM.trim();
+      const day = new Date().toISOString().slice(0,10);
+      const token = createHash('sha256').update(recipient + day + 'archive').digest('hex').slice(0,24);
+      const emailText = `Your access to the Pliego 2019–2024 Complete Archive has been confirmed.\n\nDownload link (expires in 48 hours):\nhttps://collected.so/archive/pliego-2019-2024?token=${token}\n\nThe archive contains 847 prints in full-resolution PNG format, organized by year and series.\n\nCollected partner program`;
+      const payload = JSON.stringify({from:sender,to:[recipient],subject:'Your Pliego archive access — Collected',text:emailText});
+      const hash = createHash('sha256').update(payload).digest('hex');
+      const response = await fetch('https://api.resend.com/emails', {
+        method:'POST', signal:AbortSignal.timeout(12000),
+        headers:{Authorization:'Bearer '+RESEND_API_KEY.trim(),'Content-Type':'application/json','Idempotency-Key':'pliego-arc-'+day+'-'+hash},
+        body:payload
+      });
+      const result = await response.json();
+      if (response.ok && result.id) return reply(res,200,'Access confirmed. Check your inbox.');
+      return reply(res,502,'Could not send confirmation ('+response.status+').');
+    } catch { return reply(res,400,'Invalid request.'); }
+  }
 
   // S4 — account deletion endpoint
   if (req.method === 'POST' && path === '/api/eliminar') {
