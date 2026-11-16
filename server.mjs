@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto';
 
 const html = await readFile(new URL('./public/index.html', import.meta.url));
 const joinHtml = await readFile(new URL('./public/join.html', import.meta.url));
+const eliminarHtml = await readFile(new URL('./public/eliminar.html', import.meta.url));
 const terms = await readFile(new URL('./public/club-pliego-terms.pdf', import.meta.url));
 const attempts = new Map();
 const hour = 3600000;
@@ -21,15 +22,47 @@ function reply(res, status, message) {
 
 http.createServer(async (req, res) => {
   const path = req.url.split('?')[0];
-  if (req.method === 'GET' && ['/', '/terminos', '/terminos/', '/club-pliego-terms.pdf', '/join', '/join/'].includes(path)) {
+  if (req.method === 'GET' && ['/', '/terminos', '/terminos/', '/club-pliego-terms.pdf', '/join', '/join/', '/eliminar', '/eliminar/'].includes(path)) {
     if (path === '/join' || path === '/join/') {
       res.writeHead(200, {'Content-Type':'text/html; charset=utf-8'});
       return res.end(joinHtml);
     }
+    if (path === '/eliminar' || path === '/eliminar/') {
+      res.writeHead(200, {'Content-Type':'text/html; charset=utf-8'});
+      return res.end(eliminarHtml);
+    }
     res.writeHead(200, path === '/' ? {'Content-Type':'text/html; charset=utf-8'} : {'Content-Type':'application/pdf', 'Content-Disposition':'inline; filename="club-pliego-terms.pdf"'});
     return res.end(path === '/' ? html : terms);
   }
-  if (path.startsWith('/api/') && path !== '/api/activar') return purchases(req,res,new URL(req.url,'http://localhost'));
+  if (path.startsWith('/api/') && path !== '/api/activar' && path !== '/api/eliminar') return purchases(req,res,new URL(req.url,'http://localhost'));
+
+  // S4 — account deletion endpoint
+  if (req.method === 'POST' && path === '/api/eliminar') {
+    if (req.headers['content-type'] !== 'application/json') return reply(res,415,'Unsupported request format.');
+    let body = '';
+    try {
+      for await (const chunk of req) { body += chunk; if (Buffer.byteLength(body) > 512) return reply(res,413,'Request is too large.'); }
+      const {email} = JSON.parse(body);
+      if (typeof email !== 'string' || email.length > 254 || !/^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/u.test(email)) return reply(res,400,'Check your email address.');
+      const {RESEND_API_KEY, EMAIL_FROM} = process.env;
+      if (!RESEND_API_KEY || !EMAIL_FROM) return reply(res,503,'Email delivery has not been set up yet.');
+      const recipient = email.trim();
+      const sender = EMAIL_FROM.trim();
+      const day = new Date().toISOString().slice(0,10);
+      const emailText = `Your Pliego account has been permanently deleted.\n\nAccount: ${recipient}\nDate: ${new Date().toUTCString()}\n\nAll your data, saved prints, and payment methods have been removed. This action cannot be undone.\n\nIf you did not request this deletion, your account may have been compromised. Contact support immediately.`;
+      const payload = JSON.stringify({from:sender,to:[recipient],subject:'Your Pliego account has been deleted',text:emailText});
+      const hash = createHash('sha256').update(payload).digest('hex');
+      const response = await fetch('https://api.resend.com/emails', {
+        method:'POST', signal:AbortSignal.timeout(12000),
+        headers:{Authorization:'Bearer '+RESEND_API_KEY.trim(),'Content-Type':'application/json','Idempotency-Key':'pliego-del-'+day+'-'+hash},
+        body:payload
+      });
+      const result = await response.json();
+      if (response.ok && result.id) return reply(res,200,'Account deletion confirmed.');
+      return reply(res,502,'Could not send confirmation ('+response.status+').');
+    } catch { return reply(res,400,'Invalid request.'); }
+  }
+
   if (req.method !== 'POST' || req.url !== '/api/activar') return reply(res,404,'Page not found.');
   if (req.headers['content-type'] !== 'application/json') return reply(res,415,'Unsupported request format.');
   let body = '';
