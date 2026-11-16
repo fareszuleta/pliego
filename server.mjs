@@ -22,6 +22,15 @@ function reply(res, status, message) {
 
 http.createServer(async (req, res) => {
   const path = req.url.split('?')[0];
+
+  // CORS — allow cross-origin fetches from partner domains
+  if (path === '/api/archive') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    if (req.method === 'OPTIONS') { res.writeHead(204); return res.end(); }
+  }
+
   if (req.method === 'GET' && ['/', '/terminos', '/terminos/', '/club-pliego-terms.pdf', '/join', '/join/', '/eliminar', '/eliminar/'].includes(path)) {
     if (path === '/join' || path === '/join/') {
       res.writeHead(200, {'Content-Type':'text/html; charset=utf-8'});
