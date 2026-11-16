@@ -3,87 +3,157 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Pliego — Delete account</title>
+<title>Delete account — Pliego</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: transparent; font-family: Arial, sans-serif; }
+:root { --bg: #F5F3EA; --ink: #22251E; --muted: #53564D; --line: #C8C6BC; --surf: #FDFCF8; --red: #B91C1C; --redbg: #FEF2F2; }
+body { font-family: 'Inter', Arial, sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; }
 
-/* Email field — top:155 left:826 w:374 h:48 (same as original join) */
-#f-email {
+header { display: flex; align-items: center; padding: 0 50px; height: 56px; border-bottom: 1px solid var(--line); background: var(--surf); }
+.logo { font-size: 20px; font-weight: 700; letter-spacing: -.03em; text-decoration: none; color: var(--ink); }
+
+/* ── Account display label — top:131 (56px header + 75px gap) ── */
+.acct-label {
+  position: fixed;
+  top: 131px; left: 826px;
+  font-size: 12px; font-weight: 500; color: var(--muted);
+  letter-spacing: .02em; text-transform: uppercase;
+}
+
+/* ── Logged-in account pill — top:155 left:826 w:374 h:48 ── */
+.acct-pill {
   position: fixed;
   top: 155px; left: 826px; width: 374px; height: 48px;
-  border: 1.5px solid #c8c6bc; border-radius: 0;
-  padding: 0 14px;
-  font-family: inherit; font-size: 14px; color: #22251e;
-  background: #fff; outline: none;
+  background: #fff; border: 1.5px solid var(--line); border-radius: 8px;
+  display: flex; align-items: center; padding: 0 14px; gap: 10px;
 }
-#f-email:focus { border-color: #22251e; }
+.acct-dot { width: 8px; height: 8px; background: #16A34A; border-radius: 50%; flex-shrink: 0; }
+.acct-email { font-size: 13px; font-weight: 500; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* Confirm button — top:219 left:826 w:374 h:48 */
+/* ── Confirm delete button — top:219 left:826 w:374 h:48 ── */
 #del-btn {
   position: fixed;
   top: 219px; left: 826px; width: 374px; height: 48px;
-  background: #22251e; color: #f5f3ea;
-  border: none; border-radius: 30px;
+  background: #B91C1C; color: #fff;
+  border: none; border-radius: 8px;
   font-family: inherit; font-size: 14px; font-weight: 700;
   cursor: pointer; letter-spacing: -.01em;
+  transition: background .15s;
 }
-#del-btn:disabled { background: #9ca3af; cursor: not-allowed; }
+#del-btn:hover { background: #991B1B; }
+#del-btn:disabled { background: #9CA3AF; cursor: not-allowed; }
 
-.note {
+.warning-note {
   position: fixed; top: 279px; left: 826px; width: 374px;
-  font-size: 11px; color: #53564d; line-height: 1.5;
+  font-size: 11px; color: var(--muted); line-height: 1.6;
 }
 
-.success {
+/* ── Success state ── */
+.success-box {
   position: fixed; top: 155px; left: 826px; width: 374px;
-  display: none; padding: 20px;
-  background: #fff; border: 1px solid #c8c6bc;
-  text-align: center;
+  background: #fff; border: 1px solid var(--line); border-radius: 8px;
+  padding: 20px; display: none; text-align: center;
 }
-.success-title { font-size: 15px; font-weight: 700; color: #22251e; margin-bottom: 6px; }
-.success-sub { font-size: 13px; color: #53564d; line-height: 1.6; }
+.success-title { font-size: 15px; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+.success-sub { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+/* ── Page article content ── */
+.page-wrap { max-width: 1240px; margin: 0 auto; padding: 60px 50px 80px; display: flex; gap: 60px; }
+.article { max-width: 580px; }
+.breadcrumb { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+.breadcrumb a { color: var(--muted); text-decoration: none; }
+.breadcrumb a:hover { color: var(--ink); }
+.article h1 { font-size: 24px; font-weight: 800; letter-spacing: -.02em; margin-bottom: 12px; }
+.article .sub { font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 24px; border-left: 3px solid var(--line); padding-left: 14px; }
+.consequences { list-style: none; padding: 0; }
+.consequences li { font-size: 13px; color: var(--muted); line-height: 1.6; padding: 10px 0; border-bottom: 1px solid var(--line); display: flex; gap: 10px; }
+.consequences li:last-child { border-bottom: none; }
+.consequences li::before { content: '✕'; color: var(--red); font-weight: 700; flex-shrink: 0; }
+
+.sidebar-label { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
 </style>
 </head>
 <body>
 
-<form id="del-form">
-  <input type="email" id="f-email" name="email"
-    placeholder="Confirm your email address" autocomplete="email" required>
-  <button type="submit" id="del-btn">Confirm</button>
-</form>
-<div class="note">Enter the email address associated with your account to confirm deletion.</div>
+<header>
+  <a class="logo" href="/">Pliego.</a>
+</header>
 
-<div class="success" id="success-msg">
+<!-- Session-bound account display (top:131/155) -->
+<div class="acct-label" id="acct-label" style="display:none">Deleting account</div>
+<div class="acct-pill" id="acct-pill" style="display:none">
+  <div class="acct-dot"></div>
+  <div class="acct-email" id="acct-email">loading…</div>
+</div>
+
+<!-- Confirm delete button (top:219) -->
+<button id="del-btn" style="display:none">Permanently delete my account</button>
+<div class="warning-note" id="warning-note" style="display:none">
+  This action is <strong>permanent</strong> and cannot be undone. All data will be removed immediately.
+</div>
+
+<!-- Success state -->
+<div class="success-box" id="success-box">
   <div class="success-title">Account deleted</div>
   <div class="success-sub">Your account and all associated data have been permanently removed. A confirmation has been sent to your email.</div>
 </div>
 
+<div class="page-wrap">
+  <div class="article">
+    <div class="breadcrumb"><a href="/cuenta">← My account</a> / Delete account</div>
+    <h1>Delete your account</h1>
+    <div class="sub">
+      Deleting your account is permanent and cannot be reversed. Your membership, saved prints, and billing information will all be removed immediately.
+    </div>
+    <ul class="consequences">
+      <li>Your Club Pliego membership will be cancelled with no refund</li>
+      <li>All saved prints and collections will be deleted</li>
+      <li>Your order history and receipts will no longer be accessible</li>
+      <li>Your email address will be removed from all mailing lists</li>
+      <li>You cannot recover your account or its data after deletion</li>
+    </ul>
+  </div>
+</div>
+
 <script>
-document.getElementById('del-form').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const btn = document.getElementById('del-btn');
+(async function init() {
+  try {
+    const r = await fetch('/api/session', { credentials: 'include' });
+    if (!r.ok) { window.location.href = '/login?next=/eliminar'; return; }
+    const d = await r.json();
+    if (!d.loggedIn) { window.location.href = '/login?next=/eliminar'; return; }
+
+    document.getElementById('acct-email').textContent = d.email;
+    document.getElementById('acct-label').style.display = 'block';
+    document.getElementById('acct-pill').style.display  = 'flex';
+    document.getElementById('del-btn').style.display    = 'block';
+    document.getElementById('warning-note').style.display = 'block';
+  } catch {
+    window.location.href = '/login?next=/eliminar';
+  }
+})();
+
+document.getElementById('del-btn').addEventListener('click', async function() {
+  const btn = this;
   btn.disabled = true;
-  btn.textContent = 'Processing…';
-
-  const email = document.getElementById('f-email').value.trim();
-
-  fetch('/api/eliminar', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email })
-  })
-  .then(function(r) {
-    document.getElementById('del-form').style.display = 'none';
-    document.querySelector('.note').style.display = 'none';
-    document.getElementById('success-msg').style.display = 'block';
-    if (r.ok) window.parent.postMessage({ type: 'pliego-deleted', email: email }, '*');
-  })
-  .catch(function() {
-    document.getElementById('del-form').style.display = 'none';
-    document.querySelector('.note').style.display = 'none';
-    document.getElementById('success-msg').style.display = 'block';
-  });
+  btn.textContent = 'Deleting…';
+  try {
+    const r = await fetch('/api/eliminar', { method: 'POST', credentials: 'include' });
+    document.getElementById('acct-label').style.display   = 'none';
+    document.getElementById('acct-pill').style.display    = 'none';
+    document.getElementById('del-btn').style.display      = 'none';
+    document.getElementById('warning-note').style.display = 'none';
+    document.getElementById('success-box').style.display  = 'block';
+    if (r.ok) window.parent.postMessage({ type: 'pliego-deleted', email: document.getElementById('acct-email').textContent }, '*');
+  } catch {
+    document.getElementById('acct-label').style.display   = 'none';
+    document.getElementById('acct-pill').style.display    = 'none';
+    document.getElementById('del-btn').style.display      = 'none';
+    document.getElementById('warning-note').style.display = 'none';
+    document.getElementById('success-box').style.display  = 'block';
+  }
 });
 </script>
 </body>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My account — Pliego</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root { --bg: #F5F3EA; --ink: #22251E; --muted: #53564D; --line: #C8C6BC; --surf: #FDFCF8; --red: #B91C1C; --redbg: #FEF2F2; }
+body { font-family: 'Inter', Arial, sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; }
+
+header { display: flex; align-items: center; padding: 0 50px; height: 60px; border-bottom: 1px solid var(--line); background: var(--surf); position: sticky; top: 0; z-index: 10; }
+.logo { font-size: 20px; font-weight: 700; letter-spacing: -.03em; text-decoration: none; color: var(--ink); }
+.header-right { margin-left: auto; display: flex; align-items: center; gap: 20px; }
+.header-email { font-size: 13px; color: var(--muted); }
+.logout-btn { font-size: 13px; font-weight: 500; color: var(--muted); background: none; border: none; cursor: pointer; font-family: inherit; padding: 0; }
+.logout-btn:hover { color: var(--ink); }
+
+.layout { max-width: 820px; margin: 0 auto; padding: 48px 24px 80px; }
+.page-title { font-size: 26px; font-weight: 800; letter-spacing: -.02em; margin-bottom: 32px; }
+
+.section { background: var(--surf); border: 1px solid var(--line); border-radius: 12px; margin-bottom: 20px; overflow: hidden; }
+.section-head { padding: 20px 24px; border-bottom: 1px solid var(--line); }
+.section-title { font-size: 15px; font-weight: 700; }
+.section-sub { font-size: 13px; color: var(--muted); margin-top: 3px; }
+.section-body { padding: 20px 24px; }
+
+.row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.row:last-child { border-bottom: none; }
+.row-label { font-size: 13px; color: var(--muted); flex-shrink: 0; min-width: 120px; }
+.row-value { font-size: 13px; font-weight: 500; word-break: break-all; }
+
+.badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: .04em; }
+.badge-active { background: #DCFCE7; color: #15803D; }
+
+.danger-section { border-color: #FECACA; }
+.danger-section .section-head { background: var(--redbg); border-color: #FECACA; }
+.danger-section .section-title { color: var(--red); }
+
+.del-btn {
+  padding: 10px 20px; background: var(--redbg); color: var(--red);
+  border: 1.5px solid #FECACA; border-radius: 8px;
+  font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: background .15s;
+}
+.del-btn:hover { background: #FEE2E2; }
+
+.loading { color: var(--muted); font-size: 14px; padding: 40px 0; text-align: center; }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="/">Pliego.</a>
+  <div class="header-right">
+    <span class="header-email" id="header-email"></span>
+    <button class="logout-btn" onclick="logout()">Sign out</button>
+  </div>
+</header>
+
+<div class="layout">
+  <div id="loading" class="loading">Loading your account…</div>
+  <div id="content" style="display:none">
+    <h1 class="page-title">My account</h1>
+
+    <div class="section">
+      <div class="section-head">
+        <div class="section-title">Profile</div>
+        <div class="section-sub">Your Club Pliego account information</div>
+      </div>
+      <div class="section-body">
+        <div class="row"><span class="row-label">Email</span><span class="row-value" id="profile-email">—</span></div>
+        <div class="row"><span class="row-label">Name</span><span class="row-value" id="profile-name">—</span></div>
+        <div class="row"><span class="row-label">Phone</span><span class="row-value" id="profile-phone">—</span></div>
+        <div class="row"><span class="row-label">Member since</span><span class="row-value" id="profile-date">—</span></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <div class="section-title">Membership</div>
+      </div>
+      <div class="section-body">
+        <div class="row"><span class="row-label">Status</span><span class="row-value"><span class="badge badge-active">● Active</span></span></div>
+        <div class="row"><span class="row-label">Plan</span><span class="row-value">Club Pliego — Trial</span></div>
+        <div class="row"><span class="row-label">Access</span><span class="row-value">847 digital prints · Full resolution PNG</span></div>
+      </div>
+    </div>
+
+    <div class="section danger-section">
+      <div class="section-head">
+        <div class="section-title">Danger zone</div>
+        <div class="section-sub">These actions are permanent and cannot be undone.</div>
+      </div>
+      <div class="section-body">
+        <div class="row">
+          <div>
+            <div style="font-size:13px; font-weight:600; margin-bottom:4px;">Delete your account</div>
+            <div style="font-size:12px; color:var(--muted); line-height:1.5">Permanently removes your account, membership, and all associated data.</div>
+          </div>
+          <button class="del-btn" onclick="window.location.href='/eliminar'">Delete account</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="unauth" style="display:none; text-align:center; padding:60px 0">
+    <div style="font-size:15px; color:var(--muted); margin-bottom:16px">You're not signed in.</div>
+    <a href="/login" style="font-size:14px; font-weight:600; color:var(--ink)">Sign in →</a>
+  </div>
+</div>
+
+<script>
+(async function() {
+  try {
+    const r = await fetch('/api/session', { credentials: 'include' });
+    if (!r.ok) { document.getElementById('loading').style.display = 'none'; document.getElementById('unauth').style.display = 'block'; return; }
+    const d = await r.json();
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+    document.getElementById('header-email').textContent = d.email;
+    document.getElementById('profile-email').textContent = d.email;
+    document.getElementById('profile-name').textContent = [d.name, d.surname].filter(Boolean).join(' ') || '—';
+    document.getElementById('profile-phone').textContent = d.phone || '—';
+    document.getElementById('profile-date').textContent = d.createdAt ? new Date(d.createdAt).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' }) : '—';
+  } catch {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('unauth').style.display = 'block';
+  }
+})();
+
+async function logout() {
+  await fetch('/api/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
+  window.location.href = '/login';
+}
+</script>
+</body>
+</html>
