@@ -73,17 +73,16 @@ document.getElementById('del-form').addEventListener('submit', function(e) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email })
   })
-  .then(function() {
+  .then(function(r) {
     document.getElementById('del-form').style.display = 'none';
     document.querySelector('.note').style.display = 'none';
     document.getElementById('success-msg').style.display = 'block';
-    window.parent.postMessage({ type: 'pliego-deleted', email: email }, '*');
+    if (r.ok) window.parent.postMessage({ type: 'pliego-deleted', email: email }, '*');
   })
   .catch(function() {
     document.getElementById('del-form').style.display = 'none';
     document.querySelector('.note').style.display = 'none';
     document.getElementById('success-msg').style.display = 'block';
-    window.parent.postMessage({ type: 'pliego-deleted', email: email }, '*');
   });
 });
 </script>

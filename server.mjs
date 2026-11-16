@@ -7,6 +7,9 @@ const html = await readFile(new URL('./public/index.html', import.meta.url));
 const joinHtml = await readFile(new URL('./public/join.html', import.meta.url));
 const eliminarHtml = await readFile(new URL('./public/eliminar.html', import.meta.url));
 const terms = await readFile(new URL('./public/club-pliego-terms.pdf', import.meta.url));
+// User account store — email → { name, surname, phone, createdAt }
+const users = new Map();
+
 const attempts = new Map();
 const hour = 3600000;
 setInterval(() => {
@@ -72,6 +75,15 @@ http.createServer(async (req, res) => {
     } catch { return reply(res,400,'Invalid request.'); }
   }
 
+  // Account status check
+  if (req.method === 'GET' && path === '/api/account') {
+    const emailParam = new URL(req.url, 'http://localhost').searchParams.get('email') || '';
+    const account = users.get(emailParam.toLowerCase().trim());
+    if (!account) { res.writeHead(404,{'Content-Type':'application/json'}); return res.end(JSON.stringify({exists:false})); }
+    res.writeHead(200,{'Content-Type':'application/json'});
+    return res.end(JSON.stringify({exists:true, ...account}));
+  }
+
   // S4 — account deletion endpoint
   if (req.method === 'POST' && path === '/api/eliminar') {
     if (req.headers['content-type'] !== 'application/json') return reply(res,415,'Unsupported request format.');
@@ -80,9 +92,12 @@ http.createServer(async (req, res) => {
       for await (const chunk of req) { body += chunk; if (Buffer.byteLength(body) > 512) return reply(res,413,'Request is too large.'); }
       const {email} = JSON.parse(body);
       if (typeof email !== 'string' || email.length > 254 || !/^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/u.test(email)) return reply(res,400,'Check your email address.');
+      const recipient = email.trim().toLowerCase();
+      if (!users.has(recipient)) return reply(res,404,'No account found for that email address.');
+      const account = users.get(recipient);
+      users.delete(recipient);
       const {RESEND_API_KEY, EMAIL_FROM} = process.env;
       if (!RESEND_API_KEY || !EMAIL_FROM) return reply(res,503,'Email delivery has not been set up yet.');
-      const recipient = email.trim();
       const sender = EMAIL_FROM.trim();
       const day = new Date().toISOString().slice(0,10);
       const emailText = `Your Pliego account has been permanently deleted.\n\nAccount: ${recipient}\nDate: ${new Date().toUTCString()}\n\nAll your data, saved prints, and payment methods have been removed. This action cannot be undone.\n\nIf you did not request this deletion, your account may have been compromised. Contact support immediately.`;
@@ -140,6 +155,7 @@ http.createServer(async (req, res) => {
       });
       const result = await response.json();
       if (response.ok && result.id) {
+        users.set(recipient.toLowerCase(), { name: safeName, surname: safeSurname, phone: safePhone, createdAt: new Date().toISOString() });
         setMember(res,recipient);
         return reply(res,200,'Confirmation email sent.');
       }
