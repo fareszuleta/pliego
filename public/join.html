@@ -8,21 +8,53 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: transparent; font-family: Arial, sans-serif; }
 
-/* Email input at exact S1/S2 coordinates: top:155 left:826 w:374 h:48 */
+/* Row 1: Nombre + Apellido side by side */
+#f-name {
+  position: fixed;
+  top: 127px; left: 826px; width: 181px; height: 40px;
+  border: 1.5px solid #c8c6bc; border-radius: 0;
+  padding: 0 12px;
+  font-family: inherit; font-size: 14px; color: #22251e;
+  background: #fff; outline: none;
+}
+#f-name:focus { border-color: #22251e; }
+
+#f-surname {
+  position: fixed;
+  top: 127px; left: 1013px; width: 187px; height: 40px;
+  border: 1.5px solid #c8c6bc; border-radius: 0;
+  padding: 0 12px;
+  font-family: inherit; font-size: 14px; color: #22251e;
+  background: #fff; outline: none;
+}
+#f-surname:focus { border-color: #22251e; }
+
+/* Row 2: Teléfono */
+#f-phone {
+  position: fixed;
+  top: 199px; left: 826px; width: 374px; height: 40px;
+  border: 1.5px solid #c8c6bc; border-radius: 0;
+  padding: 0 12px;
+  font-family: inherit; font-size: 14px; color: #22251e;
+  background: #fff; outline: none;
+}
+#f-phone:focus { border-color: #22251e; }
+
+/* Row 3: Email */
 #f-email {
   position: fixed;
-  top: 155px; left: 826px; width: 374px; height: 48px;
+  top: 271px; left: 826px; width: 374px; height: 40px;
   border: 1.5px solid #c8c6bc; border-radius: 0;
-  padding: 0 14px;
+  padding: 0 12px;
   font-family: inherit; font-size: 14px; color: #22251e;
   background: #fff; outline: none;
 }
 #f-email:focus { border-color: #22251e; }
 
-/* Submit button at top:219 left:826 w:374 h:48 — same as S1/S2 */
+/* Submit button */
 #join-btn {
   position: fixed;
-  top: 219px; left: 826px; width: 374px; height: 48px;
+  top: 323px; left: 826px; width: 374px; height: 48px;
   background: #22251e; color: #f5f3ea;
   border: none; border-radius: 30px;
   font-family: inherit; font-size: 14px; font-weight: 700;
@@ -31,12 +63,12 @@ body { background: transparent; font-family: Arial, sans-serif; }
 #join-btn:disabled { background: #9ca3af; cursor: not-allowed; }
 
 .note {
-  position: fixed; top: 273px; left: 826px; width: 374px;
+  position: fixed; top: 383px; left: 826px; width: 374px;
   font-size: 11px; color: #53564d; line-height: 1.5;
 }
 
 .success {
-  position: fixed; top: 155px; left: 826px; width: 374px;
+  position: fixed; top: 127px; left: 826px; width: 374px;
   display: none; padding: 20px;
   background: #fff; border: 1px solid #c8c6bc;
   text-align: center;
@@ -48,6 +80,12 @@ body { background: transparent; font-family: Arial, sans-serif; }
 <body>
 
 <form id="join-form">
+  <input type="text" id="f-name" name="name"
+    placeholder="First name" autocomplete="given-name" required>
+  <input type="text" id="f-surname" name="surname"
+    placeholder="Last name" autocomplete="family-name" required>
+  <input type="tel" id="f-phone" name="phone"
+    placeholder="+1 555 000 0000" autocomplete="tel">
   <input type="email" id="f-email" name="email"
     placeholder="your@email.com" autocomplete="email" required>
   <button type="submit" id="join-btn">Get</button>
@@ -66,12 +104,15 @@ document.getElementById('join-form').addEventListener('submit', function(e) {
   btn.disabled = true;
   btn.textContent = 'Sending…';
 
+  const name = document.getElementById('f-name').value.trim();
+  const surname = document.getElementById('f-surname').value.trim();
+  const phone = document.getElementById('f-phone').value.trim();
   const email = document.getElementById('f-email').value.trim();
 
   fetch('/api/activar', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email })
+    body: JSON.stringify({ name, surname, phone, email })
   })
   .then(function() {
     document.getElementById('join-form').style.display = 'none';

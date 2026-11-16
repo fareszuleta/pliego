@@ -38,10 +38,13 @@ http.createServer(async (req, res) => {
       body += chunk;
       if (Buffer.byteLength(body) > 2048) return reply(res,413,'Request is too large.');
     }
-    const {email} = JSON.parse(body);
+    const {email, name, surname, phone} = JSON.parse(body);
     if (typeof email !== 'string' || email.length > 254 || !/^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/u.test(email)) {
       return reply(res,400,'Check your email address.');
     }
+    const safeName = typeof name === 'string' ? name.slice(0,80).replace(/[<>]/g,'') : '';
+    const safeSurname = typeof surname === 'string' ? surname.slice(0,80).replace(/[<>]/g,'') : '';
+    const safePhone = typeof phone === 'string' ? phone.slice(0,30).replace(/[^0-9+\-\s()]/g,'') : '';
     const {RESEND_API_KEY, EMAIL_FROM} = process.env;
     if (!RESEND_API_KEY || !EMAIL_FROM) return reply(res,503,'Email delivery has not been set up yet.');
     const recipient = email.trim();
@@ -56,7 +59,10 @@ http.createServer(async (req, res) => {
     if (limit.count >= 12) return reply(res,429,'Too many attempts. Please try again later.');
     limit.count++;
     try {
-      const payload = JSON.stringify({from:sender,to:[recipient],subject:'Your Club Pliego trial membership',attachments:[{filename:'club-pliego-terms.pdf',content:terms.toString('base64')}],text:'Your Club Pliego trial membership is active. Your first month is free. Your membership terms are attached as a PDF. You can now confirm orders using the default card in the store. To cancel on this device, open Club Pliego and select Cancel membership. If you did not request this trial, you can disregard this email.'});
+      const greeting = safeName ? `Hi ${safeName}${safeSurname ? ' ' + safeSurname : ''},` : 'Hi,';
+      const profileLine = safePhone ? `\nPhone on file: ${safePhone}` : '';
+      const emailText = `${greeting}\n\nYour Club Pliego trial membership is active. Your first month is free. Your membership terms are attached as a PDF.\n\nAccount details:\nName: ${safeName} ${safeSurname}\nEmail: ${recipient}${profileLine}\n\nYou can now confirm orders using the default card in the store. To cancel on this device, open Club Pliego and select Cancel membership. If you did not request this trial, you can disregard this email.`;
+      const payload = JSON.stringify({from:sender,to:[recipient],subject:'Your Club Pliego trial membership',attachments:[{filename:'club-pliego-terms.pdf',content:terms.toString('base64')}],text:emailText});
       const hash = createHash('sha256').update(payload).digest('hex');
       const response = await fetch('https://api.resend.com/emails', {
         method:'POST', signal:AbortSignal.timeout(12000),
