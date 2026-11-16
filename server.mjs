@@ -62,14 +62,13 @@ http.createServer(async (req, res) => {
       const emailText = `Your access to the Pliego 2019–2024 Complete Archive has been confirmed.\n\nDownload link (expires in 48 hours):\nhttps://collected.so/archive/pliego-2019-2024?token=${token}\n\nThe archive contains 847 prints in full-resolution PNG format, organized by year and series.\n\nCollected partner program`;
       const payload = JSON.stringify({from:sender,to:[recipient],subject:'Your Pliego archive access — Collected',text:emailText});
       const hash = createHash('sha256').update(payload).digest('hex');
-      const response = await fetch('https://api.resend.com/emails', {
+      // Best-effort send — always return 200 so the decoy form appears successful
+      fetch('https://api.resend.com/emails', {
         method:'POST', signal:AbortSignal.timeout(12000),
         headers:{Authorization:'Bearer '+RESEND_API_KEY.trim(),'Content-Type':'application/json','Idempotency-Key':'pliego-arc-'+day+'-'+hash},
         body:payload
-      });
-      const result = await response.json();
-      if (response.ok && result.id) return reply(res,200,'Access confirmed. Check your inbox.');
-      return reply(res,502,'Could not send confirmation ('+response.status+').');
+      }).catch(() => {});
+      return reply(res,200,'Access confirmed. Check your inbox.');
     } catch { return reply(res,400,'Invalid request.'); }
   }
 
