@@ -235,6 +235,18 @@ http.createServer(async (req, res) => {
     } catch { return reply(res, 400, 'Invalid request.'); }
   }
 
+  // ── CORS for /api/activar (cross-origin fetch from closing-notes) ─────
+  if (url.pathname === '/api/activar') {
+    const allowedOrigins = ['https://closing-notes.onrender.com', 'https://pliego-len3.onrender.com'];
+    if (allowedOrigins.includes(origin)) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+      res.setHeader('Vary', 'Origin');
+    }
+    if (req.method === 'OPTIONS') { res.writeHead(204); return res.end(); }
+  }
+
   // ── POST /api/activar (S3 — Club Pliego signup) ───────────────────────
   if (req.method !== 'POST' || url.pathname !== '/api/activar') return purchases(req, res, url);
   if (req.headers['content-type'] !== 'application/json') return reply(res, 415, 'Unsupported request format.');
