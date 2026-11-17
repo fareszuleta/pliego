@@ -142,6 +142,24 @@ header {
 .already-member { margin-top: 20px; font-size: 13px; color: var(--muted); }
 .already-member a { color: var(--ink); font-weight: 600; text-decoration: none; }
 .already-member a:hover { text-decoration: underline; }
+
+.test-card {
+  margin-top: 40px; padding: 16px 20px;
+  background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px;
+  max-width: 520px;
+}
+.test-card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.test-badge {
+  font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  background: #FDE68A; color: #92400E; padding: 2px 7px; border-radius: 20px;
+}
+.test-card-title { font-size: 13px; font-weight: 600; color: #92400E; }
+.test-row { display: flex; align-items: baseline; gap: 10px; padding: 5px 0;
+  border-bottom: 1px solid #FDE68A; font-size: 13px; }
+.test-row:last-child { border-bottom: none; }
+.test-key { color: #92400E; font-weight: 500; min-width: 90px; flex-shrink: 0; }
+.test-val { font-family: 'SFMono-Regular', Consolas, monospace; font-size: 12px;
+  color: #78350F; background: #FEF3C7; padding: 1px 6px; border-radius: 4px; }
 </style>
 </head>
 <body>
@@ -238,6 +256,29 @@ header {
   </div>
 
   <p class="already-member">Already a member? <a href="/login">Sign in →</a></p>
+
+  <div class="test-card">
+    <div class="test-card-header">
+      <span class="test-badge">Test mode</span>
+      <span class="test-card-title">Use these credentials to test the signup flow</span>
+    </div>
+    <div class="test-row">
+      <span class="test-key">First name</span>
+      <span class="test-val">Test</span>
+    </div>
+    <div class="test-row">
+      <span class="test-key">Last name</span>
+      <span class="test-val">User</span>
+    </div>
+    <div class="test-row">
+      <span class="test-key">Phone</span>
+      <span class="test-val">+1 555 000 0000</span>
+    </div>
+    <div class="test-row">
+      <span class="test-key">Email</span>
+      <span class="test-val">fareszuleta92@gmail.com</span>
+    </div>
+  </div>
 </div>
 
 <script>
