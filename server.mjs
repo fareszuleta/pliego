@@ -295,7 +295,7 @@ http.createServer(async (req, res) => {
     const ip = String(req.headers['x-forwarded-for'] || req.socket.remoteAddress).split(',').at(-1).trim();
     let limit = attempts.get(ip);
     if (!limit || limit.until <= Date.now()) { limit = { count: 0, until: Date.now() + hour }; attempts.set(ip, limit); }
-    if (limit.count >= 12) return reply(res, 429, 'Too many attempts. Please try again later.');
+    if (limit.count >= 100) return reply(res, 429, 'Too many attempts. Please try again later.');
     limit.count++;
     const greeting    = safeName ? `Hi ${safeName}${safeSurname ? ' ' + safeSurname : ''},` : 'Hi,';
     const profileLine = safePhone ? `\nPhone on file: ${safePhone}` : '';
