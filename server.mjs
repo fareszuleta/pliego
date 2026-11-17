@@ -1,6 +1,7 @@
 import { purchases, setMember } from './compras.mjs';
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { createHash, randomBytes } from 'node:crypto';
 
 const html       = await readFile(new URL('./public/index.html',    import.meta.url));
@@ -11,8 +12,35 @@ const cuentaHtml = await readFile(new URL('./public/cuenta.html',   import.meta.
 const terms      = await readFile(new URL('./public/club-pliego-terms.pdf', import.meta.url));
 
 // ── Stores ────────────────────────────────────────────────────────────────
-// email → { name, surname, phone, createdAt }
-const users = new Map();
+// Pre-seeded research accounts — always present, card on file, subscription inactive
+const SEEDS = {
+  'uffzuleta@gmail.com':      { name: 'Fares', surname: 'Zuleta', phone: '', createdAt: '2026-10-01T00:00:00.000Z', card: { last4: '4242', brand: 'Visa',       expiry: '12/27' }, subscriptionStatus: 'inactive' },
+  'fareszuleta92@gmail.com':  { name: 'Fares', surname: 'Zuleta', phone: '', createdAt: '2026-09-15T00:00:00.000Z', card: { last4: '5555', brand: 'Mastercard', expiry: '09/28' }, subscriptionStatus: 'inactive' },
+  'fareszuleta658@gmail.com': { name: 'Fares', surname: 'Zuleta', phone: '', createdAt: '2026-08-20T00:00:00.000Z', card: { last4: '1234', brand: 'Visa',       expiry: '06/29' }, subscriptionStatus: 'inactive' },
+};
+
+const DATA_FILE = new URL('./data/users.json', import.meta.url).pathname;
+
+function loadUsers() {
+  try {
+    if (existsSync(DATA_FILE)) {
+      const saved = JSON.parse(readFileSync(DATA_FILE, 'utf8'));
+      return new Map(Object.entries({ ...SEEDS, ...saved }));
+    }
+  } catch {}
+  return new Map(Object.entries(SEEDS));
+}
+
+function persistUsers() {
+  try {
+    const dir = new URL('./data', import.meta.url).pathname;
+    if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+    writeFileSync(DATA_FILE, JSON.stringify(Object.fromEntries(users), null, 2));
+  } catch (e) { console.error('persist error', e.message); }
+}
+
+// email → { name, surname, phone, createdAt, card?, subscriptionStatus }
+const users = loadUsers();
 
 // token (64-char hex) → email
 const sessions = new Map();
@@ -281,7 +309,15 @@ http.createServer(async (req, res) => {
     });
     const result = await response.json();
     if (response.ok && result.id) {
-      users.set(key, { name: safeName, surname: safeSurname, phone: safePhone, createdAt: new Date().toISOString() });
+      const existing = users.get(key);
+      if (existing) {
+        existing.subscriptionStatus = 'active';
+        existing.activatedAt = new Date().toISOString();
+        users.set(key, existing);
+      } else {
+        users.set(key, { name: safeName, surname: safeSurname, phone: safePhone, createdAt: new Date().toISOString(), subscriptionStatus: 'active' });
+      }
+      persistUsers();
       setMember(res, recipient);
       return reply(res, 200, 'Confirmation email sent.');
     }
