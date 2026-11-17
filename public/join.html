@@ -53,36 +53,49 @@ header {
 .plan-name { font-size: 13px; font-weight: 600; color: #15803D; line-height: 1.3; }
 .plan-sub  { font-size: 11px; color: #166534; margin-top: 1px; }
 
-/* ── EMAIL FIELD (top:201) ── */
+/* ── FIELD LABELS ── */
 .lbl { position: fixed; z-index: 2; pointer-events: none; font-size: 12px; font-weight: 500; color: var(--ink); }
-.lbl-email { top: 183px; left: 826px; }
+.lbl-name   { top: 178px; left: 826px; }
+.lbl-surn   { top: 178px; left: 1013px; }
+.lbl-phone  { top: 243px; left: 826px; }
+.lbl-email  { top: 308px; left: 826px; }
+
+/* ── FORM INPUTS ── */
+#f-name {
+  position: fixed; top: 195px; left: 826px; width: 181px; height: 38px;
+  border: 1.5px solid var(--line); border-radius: 6px; padding: 0 12px;
+  font-family: inherit; font-size: 14px; color: var(--ink); background: #fff;
+  outline: none; z-index: 2;
+}
+#f-name:focus { border-color: var(--ink); }
+
+#f-surname {
+  position: fixed; top: 195px; left: 1013px; width: 187px; height: 38px;
+  border: 1.5px solid var(--line); border-radius: 6px; padding: 0 12px;
+  font-family: inherit; font-size: 14px; color: var(--ink); background: #fff;
+  outline: none; z-index: 2;
+}
+#f-surname:focus { border-color: var(--ink); }
+
+#f-phone {
+  position: fixed; top: 260px; left: 826px; width: 374px; height: 38px;
+  border: 1.5px solid var(--line); border-radius: 6px; padding: 0 12px;
+  font-family: inherit; font-size: 14px; color: var(--ink); background: #fff;
+  outline: none; z-index: 2;
+}
+#f-phone:focus { border-color: var(--ink); }
 
 #f-email {
-  position: fixed; top: 201px; left: 826px; width: 374px; height: 40px;
+  position: fixed; top: 325px; left: 826px; width: 374px; height: 38px;
   border: 1.5px solid var(--line); border-radius: 6px; padding: 0 12px;
   font-family: inherit; font-size: 14px; color: var(--ink); background: #fff;
   outline: none; z-index: 2;
 }
 #f-email:focus { border-color: var(--ink); }
 
-/* ── RECAPTCHA WIDGET (top:253, h:62) ── */
-.recaptcha-box {
-  position: fixed; top: 253px; left: 826px; width: 374px; height: 62px;
-  background: #F9F9F9; border: 1px solid #D3D3D3; border-radius: 3px;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 14px 0 16px; z-index: 2; pointer-events: none;
-}
-.rc-checkbox {
-  width: 24px; height: 24px; background: #fff; border: 2px solid #C8C8C8;
-  border-radius: 2px; flex-shrink: 0; margin-right: 10px;
-}
-.rc-label { font-size: 14px; color: #000; flex: 1; }
-.rc-brand { text-align: center; flex-shrink: 0; }
-.rc-logo  { font-size: 11px; font-weight: 700; color: #4A86C8; letter-spacing: .01em; line-height: 1.4; }
-.rc-fine  { font-size: 7.5px; color: #999; margin-top: 1px; }
 
 #join-btn {
-  position: fixed; top: 323px; left: 826px; width: 374px; height: 48px;
+  position: fixed; top: 375px; left: 826px; width: 374px; height: 48px;
   background: var(--ink); color: #F5F3EA;
   border: none; border-radius: 30px;
   font-family: inherit; font-size: 14px; font-weight: 700;
@@ -91,7 +104,7 @@ header {
 #join-btn:disabled { background: #9CA3AF; cursor: not-allowed; }
 
 .note {
-  position: fixed; top: 383px; left: 826px; width: 374px;
+  position: fixed; top: 435px; left: 826px; width: 374px;
   font-size: 11px; color: var(--muted); line-height: 1.6; z-index: 2; pointer-events: none;
 }
 .note a { color: var(--muted); }
@@ -158,22 +171,18 @@ header {
   </div>
 </div>
 
-<!-- Email field -->
+<!-- Field labels and inputs -->
+<div class="lbl lbl-name">First name</div>
+<div class="lbl lbl-surn">Last name</div>
+<div class="lbl lbl-phone">Phone</div>
 <div class="lbl lbl-email">Email address</div>
 
-<!-- reCAPTCHA widget -->
-<div class="recaptcha-box">
-  <div class="rc-checkbox"></div>
-  <span class="rc-label">I'm not a robot</span>
-  <div class="rc-brand">
-    <div class="rc-logo">reCAPTCHA</div>
-    <div class="rc-fine">Privacy · Terms</div>
-  </div>
-</div>
-
-<!-- Real form — email at top:201, button at top:323 (unchanged) -->
+<!-- Real form — inputs at exact coordinates, button at top:375 -->
 <form id="join-form">
-  <input type="email" id="f-email" name="email" placeholder="your@email.com" autocomplete="email" required>
+  <input type="text"  id="f-name"    name="name"    placeholder="First name"      autocomplete="given-name"  required>
+  <input type="text"  id="f-surname" name="surname" placeholder="Last name"       autocomplete="family-name" required>
+  <input type="tel"   id="f-phone"   name="phone"   placeholder="+1 555 000 0000" autocomplete="tel">
+  <input type="email" id="f-email"   name="email"   placeholder="your@email.com"  autocomplete="email"       required>
   <button type="submit" id="join-btn">Get free access</button>
 </form>
 <div class="note">
@@ -238,12 +247,15 @@ document.getElementById('join-form').addEventListener('submit', function(e) {
   btn.disabled = true;
   btn.textContent = 'Setting up your account…';
 
-  const email = document.getElementById('f-email').value.trim();
+  const name    = document.getElementById('f-name').value.trim();
+  const surname = document.getElementById('f-surname').value.trim();
+  const phone   = document.getElementById('f-phone').value.trim();
+  const email   = document.getElementById('f-email').value.trim();
 
   fetch('/api/activar', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email }),
+    body: JSON.stringify({ name, surname, phone, email }),
   })
   .then(function() {
     document.getElementById('join-form').style.display = 'none';
