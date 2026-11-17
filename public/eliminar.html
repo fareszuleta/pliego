@@ -118,17 +118,10 @@ header { display: flex; align-items: center; padding: 0 50px; height: 56px; bord
 </div>
 
 <script>
-// Read session token from URL hash (#tok=...) — set by /cuenta's /api/link redirect
-const hashParams = new URLSearchParams(location.hash.slice(1));
-const TOK = hashParams.get('tok') || null;
-
 (async function init() {
   try {
-    // Try token from hash first (cross-origin flow), fall back to cookie
-    const sessUrl = TOK
-      ? '/api/session?tok=' + encodeURIComponent(TOK)
-      : '/api/session';
-    const r = await fetch(sessUrl, { credentials: 'include' });
+    // Cookie is sent by the browser (SameSite=None → included in cross-site iframe)
+    const r = await fetch('/api/session', { credentials: 'include' });
     if (!r.ok) { window.location.href = '/login?next=/eliminar'; return; }
     const d = await r.json();
     if (!d.loggedIn) { window.location.href = '/login?next=/eliminar'; return; }
@@ -138,6 +131,9 @@ const TOK = hashParams.get('tok') || null;
     document.getElementById('acct-pill').style.display  = 'flex';
     document.getElementById('del-btn').style.display    = 'block';
     document.getElementById('warning-note').style.display = 'block';
+
+    // Tell parent the logged-in email so it can show the account pill
+    window.parent.postMessage({ type: 'pliego-session', email: d.email }, '*');
   } catch {
     window.location.href = '/login?next=/eliminar';
   }
@@ -149,14 +145,7 @@ document.getElementById('del-btn').addEventListener('click', async function() {
   btn.textContent = 'Deleting…';
   const email = document.getElementById('acct-email').textContent;
   try {
-    // Include token in body if present (cross-origin flow bypasses SameSite cookie issue)
-    const body = TOK ? JSON.stringify({ token: TOK }) : '{}';
-    const r = await fetch('/api/eliminar', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body,
-    });
+    const r = await fetch('/api/eliminar', { method: 'POST', credentials: 'include' });
     document.getElementById('acct-label').style.display   = 'none';
     document.getElementById('acct-pill').style.display    = 'none';
     document.getElementById('del-btn').style.display      = 'none';
