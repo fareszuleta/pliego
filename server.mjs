@@ -304,7 +304,7 @@ http.createServer(async (req, res) => {
     const hash = createHash('sha256').update(payload).digest('hex');
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST', signal: AbortSignal.timeout(12000),
-      headers: { Authorization: 'Bearer ' + RESEND_API_KEY.trim(), 'Content-Type': 'application/json', 'Idempotency-Key': 'pliego-' + day + '-' + hash },
+      headers: { Authorization: 'Bearer ' + RESEND_API_KEY.trim(), 'Content-Type': 'application/json', 'Idempotency-Key': 'pliego-' + day + '-' + hash + '-' + randomBytes(4).toString('hex') },
       body: payload,
     });
     const result = await response.json();
