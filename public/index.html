@@ -72,7 +72,7 @@ async function club(){
   let state;
   try {state=await (await fetch('/api/membresia')).json()} catch {show('<p>We could not check your membership. Please try again.</p>');return}
   if(state.email) localStorage.clubEmail=state.email;
-  show('<h2>Club Pliego</h2>'+(state.email?'<p>Your membership is active.</p><button onclick="receipt()">View confirmation</button><button onclick="cancelMember()">Cancel membership</button>':'<form onsubmit="event.preventDefault();activate(this)"><label>Email address<br><input name="email" type="email" autocomplete="email" required style="padding:12px;width:100%;margin:8px 0"></label><p>Your first month is free. We’ll send confirmation to your email address.</p>'+defaultCard+'<button class="dark" type="submit">Activate</button><p role="status"></p><small>By signing up, you agree to the <a href="/club-pliego-terms.pdf" target="_blank" rel="noopener">terms and conditions (PDF)</a>.</small></form>'))}
+  show('<h2>Club Pliego</h2>'+(state.email?'<p>Your membership is active.</p><button onclick="receipt()">View confirmation</button><button onclick="cancelMember()">Cancel membership</button>':'<form onsubmit="event.preventDefault();activate(this)"><label>Email address<br><input name="email" type="email" autocomplete="email" required style="padding:12px;width:100%;margin:8px 0"></label><p>US$5.32 will be charged immediately to your default card. We’ll send confirmation to your email address.</p>'+defaultCard+'<button class="dark" type="submit">Activate</button><p role="status"></p><small>By signing up, you agree to the <a href="/club-pliego-terms.pdf" target="_blank" rel="noopener">terms and conditions (PDF)</a>.</small></form>'))}
 async function activate(form) {
   const button = form.querySelector('[type="submit"]');
   const status = form.querySelector('[role="status"]');
@@ -92,5 +92,5 @@ async function activate(form) {
     button.disabled = false;
   }
 }
-function receipt(){show('<h2>Membership confirmation</h2><p>Account: <span id="account"></span></p><p>Your first month is free. You can cancel in Club Pliego.</p><p>You can now check out with the items in your bag.</p><button class="dark" onclick="cart()">Return to my bag</button><button onclick="club()">Manage membership</button>');document.getElementById('account').textContent=localStorage.clubEmail||''}
+function receipt(){show('<h2>Membership confirmation</h2><p>Account: <span id="account"></span></p><p>US$5.32 has been charged to your default card. You can cancel in Club Pliego.</p><p>You can now check out with the items in your bag.</p><button class="dark" onclick="cart()">Return to my bag</button><button onclick="club()">Manage membership</button>');document.getElementById('account').textContent=localStorage.clubEmail||''}
 </script></html>
