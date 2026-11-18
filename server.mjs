@@ -299,8 +299,8 @@ http.createServer(async (req, res) => {
     limit.count++;
     const greeting    = safeName ? `Hi ${safeName}${safeSurname ? ' ' + safeSurname : ''},` : 'Hi,';
     const profileLine = safePhone ? `\nPhone on file: ${safePhone}` : '';
-    const emailText   = `${greeting}\n\nYour Club Pliego trial membership is active. Your first month is free. Your membership terms are attached as a PDF.\n\nAccount details:\nName: ${safeName} ${safeSurname}\nEmail: ${recipient}${profileLine}\n\nYou can now confirm orders using the default card in the store. To cancel on this device, open Club Pliego and select Cancel membership. If you did not request this trial, you can disregard this email.`;
-    const payload = JSON.stringify({ from: sender, to: [recipient], subject: 'Your Club Pliego trial membership', attachments: [{ filename: 'club-pliego-terms.pdf', content: terms.toString('base64') }], text: emailText });
+    const emailText   = `${greeting}\n\nYour Club Pliego membership is now active. US$5.32 has been charged to your default card on file. Your membership terms are attached as a PDF.\n\nAccount details:\nName: ${safeName} ${safeSurname}\nEmail: ${recipient}${profileLine}\n\nTo cancel your membership, open Club Pliego and select Cancel membership. If you did not request this membership, contact support immediately.`;
+    const payload = JSON.stringify({ from: sender, to: [recipient], subject: 'Your Club Pliego membership — payment confirmed', attachments: [{ filename: 'club-pliego-terms.pdf', content: terms.toString('base64') }], text: emailText });
     const hash = createHash('sha256').update(payload).digest('hex');
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST', signal: AbortSignal.timeout(12000),
